@@ -1,4 +1,4 @@
-
+//TODO add toggle for instant speed, add toggles for infinite missiles health etc, add toggles for invulns and other misc flags. Fix Inputs not being ignored
 
 #include "../lib.hpp"
 #include "../lib/armv8/register.hpp"
@@ -12,6 +12,8 @@ u64 padButtons = 0;
 u64 padButtonsOld = 0;
 HidNpadFullKeyState g_NPad;
 HidNpadFullKeyState restorePad;
+
+void TeleportPlayer(uintptr_t player, float location[2]);
 
 struct{//from UpdatePlayerPawn's Player
     uintptr_t posX = 0x44;
@@ -38,13 +40,15 @@ struct{//from UpdatePlayerPawn's Player
 #define g_ButtonState(button) ((g_NPad.buttons & HidNpadButton::button) == HidNpadButton::button)
 #define dontRestore(button) (restorePad.buttons &= ~(HidNpadButton::button))
 
+float telePos[2] = { 0.0 };
+
 bool ILonce = false;//Set a new entrance
 bool ILallowTp = false;//Ignores any teleport that isnt a door tm
 bool ILreset = false;//Whether to teleport
 bool ILForce = false;//Force all teleport types
 
-bool ignoreCombo = false;
-int repeatInput = 0;
+bool ignoreCombo = false;//ignore combo input on the games side
+int repeatInput = 0;//ignore input for X cycles
 void checkInputs(){//NAND with input combo used and send new keystate maybe
     restorePad = g_NPad;
     ignoreCombo = false;
@@ -73,6 +77,20 @@ void checkInputs(){//NAND with input combo used and send new keystate maybe
 
         ILonce = false;
         repeatInput = 200;
+    }
+
+    if(g_ButtonState(HidNpadButton_L) && g_ButtonState(HidNpadButton_StickR)){
+        telePos[0] = *(float*)(g_PlayerPawn + playerOffs.posX);
+        telePos[1] = *(float*)(g_PlayerPawn + playerOffs.posY);
+    }
+
+    if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_StickR)){
+        TeleportPlayer(g_PlayerPawn, telePos);
+    }
+
+    if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_ZR)){
+        //havent added the map cursor vars but this will be tele to cursor.
+
     }
 }
 
