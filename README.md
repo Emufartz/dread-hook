@@ -1,9 +1,10 @@
-# exlaunch
-A framework for injecting C/C++ code into Nintendo Switch applications/applet/sysmodules.
+# dread-hook
+A Metroid Dread Practice Mod intended to remove some of the tedium of practicing and discovering tricks used in speedrunning.
 
 # Note
-This project is a work in progress. If you have issues, reach out to Shadów#1337 on Discord.
+This project is a work in progress. Some features look like garbage, some of them have missing functionality.
 
 # Credit
 - Atmosphère: A great reference and guide.
-- oss-rtld: Included for (pending) interop with rtld in applications (License [here](https://github.com/shadowninja108/exlaunch/blob/main/source/lib/reloc/rtld/LICENSE.txt)).
+- [libnx](https://github.com/switchbrew/libnx/) provides countless tools and documents that helped in the development of this mod
+- [Exlaunch](https://github.com/shadowninja108/exlaunch/) by [@shadowninja108](https://github.com/shadowninja108/) used as the base of this mod (License [here](https://github.com/shadowninja108/exlaunch/LICENSE)).
