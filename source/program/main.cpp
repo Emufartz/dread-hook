@@ -8,6 +8,7 @@ const uintptr_t g_BaseAddress = exl::util::modules::GetTargetStart();
 uintptr_t g_SpeedBooster = 0x0;
 uintptr_t g_Player = 0x0;
 uintptr_t g_PlayerPawn = 0x0;
+float mapCursorPos[3] = { 0.0 };
 u64 padButtons = 0;
 u64 padButtonsOld = 0;
 HidNpadFullKeyState g_NPad;
@@ -40,7 +41,7 @@ struct{//from UpdatePlayerPawn's Player
 #define g_ButtonState(button) ((g_NPad.buttons & HidNpadButton::button) == HidNpadButton::button)
 #define dontRestore(button) (restorePad.buttons &= ~(HidNpadButton::button))
 
-float telePos[2] = { 0.0 };
+float telePos[4] = { 0.0 };
 
 bool ILonce = false;//Set a new entrance
 bool ILallowTp = false;//Ignores any teleport that isnt a door tm
@@ -82,6 +83,8 @@ void checkInputs(){//NAND with input combo used and send new keystate maybe
     if(g_ButtonState(HidNpadButton_L) && g_ButtonState(HidNpadButton_StickR)){
         telePos[0] = *(float*)(g_PlayerPawn + playerOffs.posX);
         telePos[1] = *(float*)(g_PlayerPawn + playerOffs.posY);
+        telePos[2] = *(float*)(g_PlayerPawn + playerOffs.morphX);
+        telePos[3] = *(float*)(g_PlayerPawn + playerOffs.morphY);
     }
 
     if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_StickR)){
@@ -89,8 +92,8 @@ void checkInputs(){//NAND with input combo used and send new keystate maybe
     }
 
     if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_ZR)){
-        //havent added the map cursor vars but this will be tele to cursor.
-
+        float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
+        TeleportPlayer(g_PlayerPawn, tempPos);
     }
 }
 
@@ -105,6 +108,16 @@ HOOK_DEFINE_TRAMPOLINE(StubCopyright) {
         Orig(false);
     };
 
+};
+
+HOOK_DEFINE_TRAMPOLINE(GetMapCursor){
+    static void Callback(int64_t param1){
+        mapCursorPos[0] = *(float*)(param1 + 0x134);
+        mapCursorPos[1] = *(float*)(param1 + 0x138);
+        mapCursorPos[2] = *(float*)(param1 + 0x13c);
+
+        Orig(param1);
+    };
 };
 
 int ignoreCycles = 0;
@@ -199,11 +212,11 @@ HOOK_DEFINE_TRAMPOLINE(RoomTransitionUnk){
     };
 };
 
-void TeleportPlayer(uintptr_t player, float location[2]){
+void TeleportPlayer(uintptr_t player, float location[4]){
     *(float*)(player + playerOffs.posX) = location[0];
     *(float*)(player + playerOffs.posY) = location[1];
-    *(float*)(player + playerOffs.morphX) = location[0];
-    *(float*)(player + playerOffs.morphY) = location[1];
+    *(float*)(player + playerOffs.morphX) = location[2];
+    *(float*)(player + playerOffs.morphY) = location[3];
 }
 
 /* Declare function to dynamic link with. */
@@ -217,6 +230,7 @@ extern "C" void exl_main(void* x0, void* x1) {
     /* Install the hook at the provided function pointer. Function type is checked against the callback function. */
     StubCopyright::InstallAtFuncPtr(nn::oe::SetCopyrightVisibility);
 
+    GetMapCursor::InstallAtOffset(0x1b9f44);
     GetNpadStatic::InstallAtOffset(0x6dc7c);
     IgnoreSubAreaDeaths::InstallAtOffset(0xea4e68);
     InstantSpeedBooster::InstallAtOffset(0x33ee94);
