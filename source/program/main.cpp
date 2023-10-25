@@ -1,75 +1,38 @@
 //TODO add toggle for instant speed, add toggles for infinite missiles health etc, add toggles for invulns and other misc flags. Fix Inputs not being ignored
 
-#include "../lib.hpp"
-#include "../lib/armv8/register.hpp"
-#include "../lib/nx/runtime/pad.h"
+#include "main.h"
 
-const uintptr_t g_BaseAddress = exl::util::modules::GetTargetStart();
-uintptr_t g_SpeedBooster = 0x0;
-uintptr_t g_Player = 0x0;
-uintptr_t g_PlayerPawn = 0x0;
-float mapCursorPos[3] = { 0.0 };
-u64 padButtons = 0;
-u64 padButtonsOld = 0;
-HidNpadFullKeyState g_NPad;
-HidNpadFullKeyState restorePad;
-
-void TeleportPlayer(uintptr_t player, float location[2]);
-
-struct{//from UpdatePlayerPawn's Player
-    uintptr_t posX = 0x44;
-    uintptr_t posY = 0x54;
-    uintptr_t skew = 0x58;
-    uintptr_t unkState = 0xB0;//u8
-    uintptr_t unkState2 = 0x3D0;//u16
-    uintptr_t velX = 0x2FA8;
-    uintptr_t velY = 0x2FAC;
-    uintptr_t fullInvuln = 0x3589;
-    uintptr_t health = 0x14FA4;
-    uintptr_t fKnockbackFrames = 0x14FB0;
-    uintptr_t fIFrames = 0x14FB8;
-    
-    uintptr_t morphX = 0x789254;
-    uintptr_t morphY = 0x789264;
-    uintptr_t unkMorphState = 0x7892C0;
-    uintptr_t morphXVel = 0x7897C8;
-    uintptr_t morphYVel = 0x7897CC;
-    uintptr_t morphGravity = 0x7896F4;
-    uintptr_t morphRes = 0x78B9C6;
-} playerOffs;
-
-#define g_ButtonState(button) ((g_NPad.buttons & HidNpadButton::button) == HidNpadButton::button)
-#define dontRestore(button) (restorePad.buttons &= ~(HidNpadButton::button))
-
-float telePos[4] = { 0.0 };
-
-bool ILonce = false;//Set a new entrance
-bool ILallowTp = false;//Ignores any teleport that isnt a door tm
-bool ILreset = false;//Whether to teleport
-bool ILForce = false;//Force all teleport types
-
-bool ignoreCombo = false;//ignore combo input on the games side
-int repeatInput = 0;//ignore input for X cycles
 void checkInputs(){//NAND with input combo used and send new keystate maybe
-    restorePad = g_NPad;
-    ignoreCombo = false;
 
     if(repeatInput){
         repeatInput--;
-        return;
+        if(!waitOne)
+            return;
     }
 
-    if(!g_ButtonState(HidNpadButton_Down))
-        return;
+    if(g_ButtonState(HidNpadButton_Up)){
+        turboButtons = !turboButtons;
+        repeatInput = avoidRepeat;
+    }
 
+    if(!g_ButtonState(HidNpadButton_Down)){
+        ignoreCombo = false;
+        return;
+    }
     ignoreCombo = true;
+
+    //Wait for some time since combos are probably not frame perfect lol
+    //svcSleepThread(waitTime);
+    restorePad.buttons = 0;
+    restorePad.analog_stick_l = (HidAnalogStickState)0;
+    restorePad.analog_stick_r = (HidAnalogStickState)0;
 
     if(g_ButtonState(HidNpadButton_ZL) && g_ButtonState(HidNpadButton_StickR)){
         dontRestore(HidNpadButton_ZL);
         dontRestore(HidNpadButton_StickR);
 
         ILreset = !ILreset;
-        repeatInput = 200;
+        repeatInput = avoidRepeat;
     }
 
     if(g_ButtonState(HidNpadButton_ZR) && g_ButtonState(HidNpadButton_StickR)){
@@ -77,7 +40,7 @@ void checkInputs(){//NAND with input combo used and send new keystate maybe
         dontRestore(HidNpadButton_StickR);
 
         ILonce = false;
-        repeatInput = 200;
+        repeatInput = avoidRepeat;
     }
 
     if(g_ButtonState(HidNpadButton_L) && g_ButtonState(HidNpadButton_StickR)){
@@ -95,19 +58,80 @@ void checkInputs(){//NAND with input combo used and send new keystate maybe
         float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
         TeleportPlayer(g_PlayerPawn, tempPos);
     }
+    
+    if(g_ButtonState(HidNpadButton_A) && g_ButtonState(HidNpadButton_B)){
+        forceCSpark = !forceCSpark;
+        repeatInput = avoidRepeat;
+    }
+    
+    if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_Y)){
+        setInstantSpeed = !setInstantSpeed;
+        repeatInput = avoidRepeat;
+    }
+    
+    if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_A)){
+        *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = !*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea);
+        ourFreeze = (!ourFreeze & *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea));
+        repeatInput = avoidRepeat;
+        svcSleepThread(waitTime);
+    }
+    
+    if((g_ButtonState(HidNpadButton_Y) && g_ButtonState(HidNpadButton_A)) || waitOne){
+        if(ourFreeze && *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea)){
+            *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = false;
+            waitOne = true;
+            svcSleepThread(waitTime);
+            restorePad = g_NPad;
+        }
+        else{
+            *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = true;
+            waitOne = false;
+        }
+        repeatInput = avoidRepeat;
+    }
+
+
+    
 }
 
-/* Define hook StubCopyright. Trampoline indicates the original function should be kept. */
-/* HOOK_DEFINE_REPLACE can be used if the original function does not need to be kept. */
-HOOK_DEFINE_TRAMPOLINE(StubCopyright) {
+void TeleportPlayer(uintptr_t player, float location[4]){
+    *(float*)(player + playerOffs.posX) = location[0];
+    *(float*)(player + playerOffs.posY) = location[1];
+    *(float*)(player + playerOffs.morphX) = location[2];
+    *(float*)(player + playerOffs.morphY) = location[3];
+}
 
-    /* Define the callback for when the function is called. Don't forget to make it static and name it Callback. */
-    static void Callback(bool enabled) {
+HOOK_DEFINE_TRAMPOLINE(DisableFullInput){
+    static int Callback(HidNpadFullKeyState* state, uint32_t* unkInt){
+        int result = Orig(state, unkInt);
 
-        /* Call the original function, with the argument always being false. */
-        Orig(false);
+        if(ignoreCombo && false){//it doesnt work rn so force off
+            //state->buttons = restorePad.buttons;
+            //state->analog_stick_l = restorePad.analog_stick_l;
+            //state->analog_stick_r = restorePad.analog_stick_r;
+            state->buttons = 0;
+            state->analog_stick_l = (HidAnalogStickState)0;
+            state->analog_stick_r = (HidAnalogStickState)0;
+        }
+
+        return result;
+
     };
+};
 
+HOOK_DEFINE_TRAMPOLINE(DisableHandheldInput){
+    static int Callback(HidNpadHandheldState* state, uint32_t* unkInt){
+        int result = Orig(state, unkInt);
+
+        if(ignoreCombo){
+            state->buttons = restorePad.buttons;
+            state->analog_stick_l = restorePad.analog_stick_l;
+            state->analog_stick_r = restorePad.analog_stick_r;
+        }
+
+        return result;
+
+    };
 };
 
 HOOK_DEFINE_TRAMPOLINE(GetMapCursor){
@@ -120,7 +144,6 @@ HOOK_DEFINE_TRAMPOLINE(GetMapCursor){
     };
 };
 
-int ignoreCycles = 0;
 HOOK_DEFINE_TRAMPOLINE(InstantSpeedBooster){//Instant Charge.
     static void Callback(uintptr_t speedboosterInst){
         g_SpeedBooster = speedboosterInst;
@@ -128,7 +151,7 @@ HOOK_DEFINE_TRAMPOLINE(InstantSpeedBooster){//Instant Charge.
         float SpeedThreshhold = *(float*)(g_BaseAddress + 0x7265724c);//derived from the Tunable
 
 
-        if(speedboosterInst)//Is Speed Booster Instance Valid?
+        if(speedboosterInst && setInstantSpeed)//Is Speed Booster Instance Valid and are we using it.
             if(*(u8*)(speedboosterInst+0x394) == 1){//Is Speed Booster Charging?
 
                 *(float*)(speedboosterInst+0x398) = SpeedThreshhold;//Set Speed Booster Time
@@ -147,16 +170,15 @@ HOOK_DEFINE_TRAMPOLINE(InstantSpeedBooster){//Instant Charge.
         }
         
         Orig(speedboosterInst);
-    };//off 33ee94
+    };
 };
 
 HOOK_DEFINE_TRAMPOLINE(GetNpadStatic){
     static void Callback(int64_t param1){
         g_NPad = *(HidNpadFullKeyState*)(param1 + 0x660);
+        restorePad = *(HidNpadFullKeyState*)(param1 + 0x660);
 
         checkInputs();
-        if(ignoreCombo)
-            *(HidNpadFullKeyState*)(param1 + 0x660) = restorePad;
 
         Orig(param1);
     };
@@ -171,7 +193,9 @@ HOOK_DEFINE_TRAMPOLINE(IgnoreSubAreaDeaths){
 
 HOOK_DEFINE_TRAMPOLINE(ForceCoolSpark){
     static u64 Callback(u64 param1, uint* param2, uint* param3){
-        return 1;
+        bool origRet = Orig(param1, param2, param3);
+
+        return origRet | forceCSpark;
     };
 };
 
@@ -190,11 +214,10 @@ HOOK_DEFINE_TRAMPOLINE(UpdatePlayerPawn){//includes all/most entites?
     };
 };
 
-float roomIL[3] = {0.0};
 HOOK_DEFINE_TRAMPOLINE(RoomTransitionUnk){
     static void Callback(int64_t* Player, int32_t* unkNewPos, uint64_t param3){
 
-        if(unkNewPos && (int64_t*)g_PlayerPawn == Player && *(float*)(g_PlayerPawn + playerOffs.posX)) {
+        if(unkNewPos && (int64_t*)g_PlayerPawn == Player && *(float*)(g_PlayerPawn + playerOffs.posX) && ((ILreset && ILallowTp) || ILForce)) {
             if(!ILonce){
                 roomIL[0] = *(float*)(unkNewPos+0x00);
                 roomIL[1] = *(float*)(g_PlayerPawn + playerOffs.posY);
@@ -212,23 +235,12 @@ HOOK_DEFINE_TRAMPOLINE(RoomTransitionUnk){
     };
 };
 
-void TeleportPlayer(uintptr_t player, float location[4]){
-    *(float*)(player + playerOffs.posX) = location[0];
-    *(float*)(player + playerOffs.posY) = location[1];
-    *(float*)(player + playerOffs.morphX) = location[2];
-    *(float*)(player + playerOffs.morphY) = location[3];
-}
-
-/* Declare function to dynamic link with. */
-namespace nn::oe {
-    void SetCopyrightVisibility(bool);
-};
-
 extern "C" void exl_main(void* x0, void* x1) {
     /* Setup hooking enviroment. */
     exl::hook::Initialize();
-    /* Install the hook at the provided function pointer. Function type is checked against the callback function. */
-    StubCopyright::InstallAtFuncPtr(nn::oe::SetCopyrightVisibility);
+
+    DisableFullInput::InstallAtOffset(0x11f3630);
+    DisableHandheldInput::InstallAtOffset(0x11f3640);
 
     GetMapCursor::InstallAtOffset(0x1b9f44);
     GetNpadStatic::InstallAtOffset(0x6dc7c);
