@@ -15,7 +15,7 @@ This list of features is in no particular order and was last updated for version
  - Toggle Freeze Frame (doesn't work on console for now): X + A
  - Frame Advance (process exactly 1 frame, this waits 300ms to allow you to release/press what keys you want processed for <b>this frame</b>): Y + A
 
-#Upcoming Features
+# Upcoming Features
 These are features I haven't yet added functionality for but do have the required offsets and capabilities to add:
  - Infinite HP, Missiles, and Power Bombs
  - Simulate if the player has IFrames (intagibility)
