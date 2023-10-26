@@ -12,7 +12,13 @@ float mapCursorPos[3] = { 0.0 };
 u64 padButtons = 0;
 u64 padButtonsOld = 0;
 HidNpadFullKeyState g_NPad;
-HidNpadFullKeyState restorePad;
+//HidNpadFullKeyState restorePad;
+
+bool checkInputs();
+
+void ManipulateInput(HidNpadCommonState* state);
+
+void handleInput(HidNpadFullKeyState *state);
 
 void TeleportPlayer(uintptr_t player, float location[2]);
 
@@ -46,7 +52,7 @@ struct{//from UpdatePlayerPawn's Player
 
 //Input Combo vars and methods
 #define g_ButtonState(button) ((g_NPad.buttons & HidNpadButton::button) == HidNpadButton::button)
-#define dontRestore(button) (restorePad.buttons &= ~(HidNpadButton::button))
+#define g_ButtonXState(button) ((g_NPad.buttons ^ HidNpadButton::button) == 0)
 
 float telePos[4] = { 0.0 };
 
@@ -61,16 +67,22 @@ int waitTime = 300 * 1000000;//milliseconds to wait for frame advance to avoid p
 bool waitOne = false;//testing for a frame advance
 bool ourFreeze = false;
 bool ignoreCombo = false;//ignore combo input on the games side
-bool turboButtons = false;//reset button state every frame
+u64 comboButtons = 0;
+bool turboButtons = false;//flip button state every frame
+bool turboSwitcher = false;//used to rapidly switch button states
+bool getCombo = false;
+u64 turboCombo = 0;
+u64 storeForFA = 0;
 
-void checkInputs();
-
-//Instant Speed vars
+//Instant Speed vars 
 int ignoreCycles = 0;
-bool setInstantSpeed = false;
+bool setInstantSpeed = true;
 
 //Cool Spark vars
 bool forceCSpark = false;
+
+//Ignore Sub Area Deaths vars
+bool ignoreOobDeath = true;
 
 //Individual Room vars
 float roomIL[3] = {0.0};

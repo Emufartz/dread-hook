@@ -1,97 +1,110 @@
-//TODO add toggle for instant speed, add toggles for infinite missiles health etc, add toggles for invulns and other misc flags. Fix Inputs not being ignored
+//TODO add toggles for infinite missiles health etc, add toggles for invulns and other misc flags.
 
 #include "main.h"
 
-void checkInputs(){//NAND with input combo used and send new keystate maybe
+bool checkInputs(){
+    //Store "Last Frames" inputs to make Frame Advance work
+    storeForFA = comboButtons;
 
-    if(repeatInput){
+    if(repeatInput >= 1){
         repeatInput--;
-        if(!waitOne)
-            return;
+        if(!waitOne){
+            return true;
+        }
     }
 
-    if(g_ButtonState(HidNpadButton_Up)){
+    if(g_ButtonState(HidNpadButton_Up)){//Toggle Turbo
         turboButtons = !turboButtons;
-        repeatInput = avoidRepeat;
+        repeatInput = 20;
+        getCombo = true;
+        comboButtons = 0;
+        if(turboButtons)
+            svcSleepThread(waitTime);//Wait for a bit so the player can hold the button(s) they want turbo'd
+        return true;
     }
 
-    if(!g_ButtonState(HidNpadButton_Down)){
-        ignoreCombo = false;
-        return;
-    }
-    ignoreCombo = true;
+    if(!g_ButtonState(HidNpadButton_Down) && !waitOne){//If we arent trying to enter a combo then obviously dont listen and allow input
+        comboButtons = 0;
+        return false;
+    } else {
+        comboButtons |= HidNpadButton_Down;
+        comboButtons ^= HidNpadButton_Down;
 
-    //Wait for some time since combos are probably not frame perfect lol
-    //svcSleepThread(waitTime);
-    restorePad.buttons = 0;
-    restorePad.analog_stick_l = (HidAnalogStickState)0;
-    restorePad.analog_stick_r = (HidAnalogStickState)0;
+        if(!g_ButtonXState(HidNpadButton_Down) || waitOne){//If we are holding more than just DPAD Down
 
-    if(g_ButtonState(HidNpadButton_ZL) && g_ButtonState(HidNpadButton_StickR)){
-        dontRestore(HidNpadButton_ZL);
-        dontRestore(HidNpadButton_StickR);
+            //#pragma region hidecombos
+            if(g_ButtonState(HidNpadButton_ZL) && g_ButtonState(HidNpadButton_StickR)){
+                //Toggle Room IL
+                ILreset = !ILreset;
+                repeatInput = avoidRepeat;
+                return true;
+            }
 
-        ILreset = !ILreset;
-        repeatInput = avoidRepeat;
-    }
+            if(g_ButtonState(HidNpadButton_ZR) && g_ButtonState(HidNpadButton_StickR)){
+                //Store Next Room Entrance
 
-    if(g_ButtonState(HidNpadButton_ZR) && g_ButtonState(HidNpadButton_StickR)){
-        dontRestore(HidNpadButton_ZR);
-        dontRestore(HidNpadButton_StickR);
+                ILonce = false;
+                repeatInput = avoidRepeat;
+                return true;
+            }
 
-        ILonce = false;
-        repeatInput = avoidRepeat;
-    }
+            if(g_ButtonState(HidNpadButton_L) && g_ButtonState(HidNpadButton_StickR)){
+                //Save Tele pos for Teleport
 
-    if(g_ButtonState(HidNpadButton_L) && g_ButtonState(HidNpadButton_StickR)){
-        telePos[0] = *(float*)(g_PlayerPawn + playerOffs.posX);
-        telePos[1] = *(float*)(g_PlayerPawn + playerOffs.posY);
-        telePos[2] = *(float*)(g_PlayerPawn + playerOffs.morphX);
-        telePos[3] = *(float*)(g_PlayerPawn + playerOffs.morphY);
-    }
+                telePos[0] = *(float*)(g_PlayerPawn + playerOffs.posX);
+                telePos[1] = *(float*)(g_PlayerPawn + playerOffs.posY);
+                telePos[2] = *(float*)(g_PlayerPawn + playerOffs.morphX);
+                telePos[3] = *(float*)(g_PlayerPawn + playerOffs.morphY);
+                repeatInput = avoidRepeat;
+                return true;
+            }
 
-    if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_StickR)){
-        TeleportPlayer(g_PlayerPawn, telePos);
-    }
+            if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_StickR)){
+                //Tele to saved pos
 
-    if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_ZR)){
-        float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
-        TeleportPlayer(g_PlayerPawn, tempPos);
-    }
-    
-    if(g_ButtonState(HidNpadButton_A) && g_ButtonState(HidNpadButton_B)){
-        forceCSpark = !forceCSpark;
-        repeatInput = avoidRepeat;
-    }
-    
-    if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_Y)){
-        setInstantSpeed = !setInstantSpeed;
-        repeatInput = avoidRepeat;
-    }
-    
-    if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_A)){
-        *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = !*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea);
-        ourFreeze = (!ourFreeze & *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea));
-        repeatInput = avoidRepeat;
-        svcSleepThread(waitTime);
-    }
-    
-    if((g_ButtonState(HidNpadButton_Y) && g_ButtonState(HidNpadButton_A)) || waitOne){
-        if(ourFreeze && *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea)){
-            *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = false;
-            waitOne = true;
-            svcSleepThread(waitTime);
-            restorePad = g_NPad;
+                TeleportPlayer(g_PlayerPawn, telePos);
+                repeatInput = avoidRepeat;
+                return true;
+            }
+
+            if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_ZR)){
+                //Tele to map cursor, TODO add a check for in menu
+
+                float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
+                TeleportPlayer(g_PlayerPawn, tempPos);
+                repeatInput = avoidRepeat;
+                return true;
+            }
+
+            if(g_ButtonState(HidNpadButton_A) && g_ButtonState(HidNpadButton_B)){
+                //Toggle cool spark
+
+                forceCSpark = !forceCSpark;
+                repeatInput = avoidRepeat;
+                return true;
+            }
+
+            if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_Y)){
+                //Toggle Instant Booster
+
+                setInstantSpeed = !setInstantSpeed;
+                repeatInput = avoidRepeat;
+                return true;
+            }
+            //#endregion
+            if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_A)){
+                //Toggle Freeze Time
+
+                *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = !*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea);
+                ourFreeze = (!ourFreeze & *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea));
+                repeatInput = avoidRepeat;
+                comboButtons |= (HidNpadButton_X | HidNpadButton_A);//Just in case
+                
+                return false;
+            }
         }
-        else{
-            *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = true;
-            waitOne = false;
-        }
-        repeatInput = avoidRepeat;
     }
-
-
-    
+    return false;
 }
 
 void TeleportPlayer(uintptr_t player, float location[4]){
@@ -101,37 +114,98 @@ void TeleportPlayer(uintptr_t player, float location[4]){
     *(float*)(player + playerOffs.morphY) = location[3];
 }
 
-HOOK_DEFINE_TRAMPOLINE(DisableFullInput){
-    static int Callback(HidNpadFullKeyState* state, uint32_t* unkInt){
+void ManipulateInput(HidNpadCommonState* state){
+    
+    if(!waitOne){
+        if(ignoreCombo){
+                state->buttons &= HidNpadButton_Down;//Dont remove dpad down it causes issues
+                state->analog_stick_l = (HidAnalogStickState)0;
+                state->analog_stick_r = (HidAnalogStickState)0;
+        } else 
+        if(comboButtons){
+            comboButtons ^= HidNpadButton_Down;//Remove DPAD Down
+            state->buttons ^= comboButtons;//XOR combo buttons to ignore them
+            state->buttons ^= HidNpadButton_Down;//Reset DPAD Down
+            comboButtons = 0;
+        }
+    }
+
+    if(turboButtons && !ignoreCombo) {
+
+        if(turboSwitcher){
+            turboSwitcher = false;
+            state->buttons &= ~turboCombo;
+        } 
+        else {
+            turboSwitcher = true;
+        }
+    }
+}
+
+void handleInput(HidNpadFullKeyState *state){
+    g_NPad = *state;//yoinky state to use for inputs
+    comboButtons = g_NPad.buttons;//store copy of pre-modified state for later use
+    if(getCombo){//Grab combo for turbo
+        turboCombo = (g_NPad.buttons | HidNpadButton_Up);
+        turboCombo ^= HidNpadButton_Up;//Don't turbo the turbo toggle button lol
+        getCombo = false;
+    }
+
+    ignoreCombo = checkInputs();//Do all input based logic
+
+    ManipulateInput(state);//Manipulate game perceived controler state
+}
+
+HOOK_DEFINE_TRAMPOLINE(DisableFullKeyState){
+    static int Callback(HidNpadFullKeyState *state, int *unkInt){
         int result = Orig(state, unkInt);
 
-        if(ignoreCombo && false){//it doesnt work rn so force off
-            //state->buttons = restorePad.buttons;
-            //state->analog_stick_l = restorePad.analog_stick_l;
-            //state->analog_stick_r = restorePad.analog_stick_r;
-            state->buttons = 0;
-            state->analog_stick_l = (HidAnalogStickState)0;
-            state->analog_stick_r = (HidAnalogStickState)0;
-        }
+        handleInput(state);
 
         return result;
 
     };
 };
 
-HOOK_DEFINE_TRAMPOLINE(DisableHandheldInput){
-    static int Callback(HidNpadHandheldState* state, uint32_t* unkInt){
+HOOK_DEFINE_TRAMPOLINE(DisableHandheldState){
+    static int Callback(HidNpadHandheldState *state, int *unkInt){
         int result = Orig(state, unkInt);
 
-        if(ignoreCombo){
-            state->buttons = restorePad.buttons;
-            state->analog_stick_l = restorePad.analog_stick_l;
-            state->analog_stick_r = restorePad.analog_stick_r;
-        }
+        handleInput(state);
 
         return result;
 
     };
+};
+
+HOOK_DEFINE_TRAMPOLINE(DisableJoyDualState) {
+  static int Callback(HidNpadJoyDualState *state, int *unkInt) {
+        int result = Orig(state, unkInt);
+
+        handleInput(state);
+
+    return result;
+  };
+};
+
+HOOK_DEFINE_TRAMPOLINE(DisableJoyLeftState) {
+  static int Callback(HidNpadJoyLeftState *state, int *unkInt) {
+        int result = Orig(state, unkInt);
+
+        handleInput(state);
+
+    return result;
+  };
+};
+
+HOOK_DEFINE_TRAMPOLINE(DisableJoyRightState) {
+  static int Callback(HidNpadJoyRightState *state, int *unkInt) {
+        int result = Orig(state, unkInt);
+
+        handleInput(state);
+
+    return result;
+  };
 };
 
 HOOK_DEFINE_TRAMPOLINE(GetMapCursor){
@@ -173,12 +247,25 @@ HOOK_DEFINE_TRAMPOLINE(InstantSpeedBooster){//Instant Charge.
     };
 };
 
-HOOK_DEFINE_TRAMPOLINE(GetNpadStatic){
+HOOK_DEFINE_TRAMPOLINE(checkForFrameAdvance){//this one sucks, and its only use seems to be that frame advance works in it, but nothing else does :)
     static void Callback(int64_t param1){
-        g_NPad = *(HidNpadFullKeyState*)(param1 + 0x660);
-        restorePad = *(HidNpadFullKeyState*)(param1 + 0x660);
 
-        checkInputs();
+        g_NPad.buttons = storeForFA;//hacky solution to immitate the old functionality of this function.
+    
+        if(((g_ButtonState(HidNpadButton_Y) && g_ButtonState(HidNpadButton_A)) && g_ButtonState(HidNpadButton_Down)) || waitOne){
+            //Advance one frame
+            
+            if(ourFreeze && *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea)){
+                *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = false;
+                waitOne = true;
+                svcSleepThread(waitTime);
+            }
+            else{
+                *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = true;
+                waitOne = false;
+            }
+        }
+
 
         Orig(param1);
     };
@@ -187,6 +274,9 @@ HOOK_DEFINE_TRAMPOLINE(GetNpadStatic){
 HOOK_DEFINE_TRAMPOLINE(IgnoreSubAreaDeaths){
     static void Callback(uintptr_t EntityInst){
         g_Player = EntityInst;
+        if(!ignoreOobDeath){
+            Orig(EntityInst);
+        }
         return;
     };
 };
@@ -239,11 +329,14 @@ extern "C" void exl_main(void* x0, void* x1) {
     /* Setup hooking enviroment. */
     exl::hook::Initialize();
 
-    DisableFullInput::InstallAtOffset(0x11f3630);
-    DisableHandheldInput::InstallAtOffset(0x11f3640);
+    DisableFullKeyState::InstallAtSymbol("_ZN2nn3hid12GetNpadStateEPNS0_16NpadFullKeyStateERKj");
+    DisableHandheldState::InstallAtSymbol("_ZN2nn3hid12GetNpadStateEPNS0_17NpadHandheldStateERKj");
+    DisableJoyDualState::InstallAtSymbol("_ZN2nn3hid12GetNpadStateEPNS0_16NpadJoyDualStateERKj");
+    DisableJoyLeftState::InstallAtSymbol("_ZN2nn3hid12GetNpadStateEPNS0_16NpadJoyLeftStateERKj");
+    DisableJoyRightState::InstallAtSymbol("_ZN2nn3hid12GetNpadStateEPNS0_17NpadJoyRightStateERKj");
 
     GetMapCursor::InstallAtOffset(0x1b9f44);
-    GetNpadStatic::InstallAtOffset(0x6dc7c);
+    checkForFrameAdvance::InstallAtOffset(0x6dc7c);
     IgnoreSubAreaDeaths::InstallAtOffset(0xea4e68);
     InstantSpeedBooster::InstallAtOffset(0x33ee94);
     ForceCoolSpark::InstallAtOffset(0x32e798);
