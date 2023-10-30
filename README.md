@@ -2,8 +2,12 @@
 A Metroid Dread Practice Mod intended to remove some of the tedium of practicing and discovering tricks used in speedrunning.
 
 # Features
-This list of features is in no particular order and was last updated for version 0.3.
+This list of features is in no particular order and was last updated for version 0.4b.
  Button Combos(All Button Combos need DPAD Down held unless specified):
+ - Toggle Noclip (use Left Stick to fly around): (Only) L + DPAD Left
+ - Return to Noclip start position: (Only) L + DPAD Right
+ - Toggle Out of Bounds Deaths: Click LStick
+ - Fully Restore Health and Missiles: Minus
  - Toggle Cool Spark Camera (when shinesparking): A + B
  - Toggle Instant Speed Booster (when you click the stick): X + Y
  - Toggle Room IL (teleports you to the stored room entrance when you run through any door transition): ZL + Click RStick
@@ -12,7 +16,7 @@ This list of features is in no particular order and was last updated for version
  - Store Current Position: L + Click RStick
  - Teleport To Map Cursor (doesn't check if you are paused for now): R + ZR
  - Toggle Turbo (pauses the game for a second and turbos whatever buttons you held after): DPAD Up (doesn't need DPAD Down)
- - Toggle Freeze Frame (doesn't work on console for now): X + A
+ - Toggle Freeze Frame: X + A
  - Frame Advance (process exactly 1 frame, this waits 300ms to allow you to release/press what keys you want processed for <b>this frame</b>): Y + A
 
 # Upcoming Features
@@ -24,12 +28,12 @@ These are features I haven't yet added functionality for but do have the require
  - Disable Morph Ball Drag (same level of air and ground control as if you were mid bomb jump, also for funsies)
  - Disable All Forms Of Damage (the same flag is set as with the EMMI Door glitch in v1.0)
  - Adjust Skew angle on the fly
- - Toggle for ignoring OOB deaths
+ - Instantly kill the player (if you are stuck or something)
+ - Kill the current EMMI, Boss, or visible enemies
+ - Gain all items at once (working on making items togglable before adding this. As there is no choice of which items you want/don't want)
+ - Set the games framerate (still locked to 60fps)
 
 I also have the offsets for Samus' X and Y velocities for morph and unmorphed states. But I can't think of something cool to use this for.
-
-Misc:
- - Disabled out of bounds deaths: you will not instantly die when inside of blocks or otherwise outside the "intended play area™". A combo will be added for this soon. Currently defaults to enabled
 
 # Note
 This project is a work in progress. Some features look like garbage, some of them have missing functionality.
