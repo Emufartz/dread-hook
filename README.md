@@ -2,7 +2,7 @@
 A Metroid Dread Practice Mod intended to remove some of the tedium of practicing and discovering tricks used in speedrunning.
 
 # Features
-This list of features is in no particular order and was last updated for version 0.4b.
+This list of features is in no particular order and was last updated for version 0.5.
  Button Combos(All Button Combos need DPAD Down held unless specified):
  - Toggle Noclip (use Left Stick to fly around): (Only) L + DPAD Left
  - Return to Noclip start position: (Only) L + DPAD Right
@@ -12,9 +12,13 @@ This list of features is in no particular order and was last updated for version
  - Toggle Instant Speed Booster (when you click the stick): X + Y
  - Toggle Room IL (teleports you to the stored room entrance when you run through any door transition): ZL + Click RStick
  - Overwrite stored (Room IL) entrance with next transition: ZR + Click RStick
+ - Toggle IL Gauntlet (allows setting a specific door that teleports you back to the Room IL door): Y + Click RStick
+ - Overwrite stored (IL Gauntlet) "finish line" with next door: X + Click RStick
  - Teleport To Stored Position (seperate from Room IL): R + Click RStick
  - Store Current Position: L + Click RStick
  - Teleport To Map Cursor (doesn't check if you are paused for now): R + ZR
+ - Decrease or Increase game speed: (Only) R + DPAD Left(-) or Right(+)
+ - Reset game speed to normal: (Only) R + Minus
  - Toggle Turbo (pauses the game for a second and turbos whatever buttons you held after): DPAD Up (doesn't need DPAD Down)
  - Toggle Freeze Frame: X + A
  - Frame Advance (process exactly 1 frame, this waits 300ms to allow you to release/press what keys you want processed for <b>this frame</b>): Y + A
