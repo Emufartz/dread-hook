@@ -4,18 +4,26 @@
 #include "../lib/armv8/register.hpp"
 #include "../lib/nx/runtime/pad.h"
 
-const uintptr_t g_BaseAddress = exl::util::modules::GetTargetStart();
+u8 g_Version = 1;
+//0 -> 1.0, 1 -> 2.1
+
+const exl::util::ModuleInfo g_MainInfo = exl::util::GetMainModuleInfo();
+const uintptr_t g_BaseAddress = g_MainInfo.m_Total.m_Start;
+const uintptr_t g_MainEnd = g_BaseAddress + g_MainInfo.m_Total.m_Size;
 uintptr_t g_SpeedBooster = 0x0;
 uintptr_t g_Player = 0x0;
 uintptr_t g_PlayerPawn = 0x0;
 uint64_t g_luaState = 0;
 float mapCursorPos[3] = { 0.0 };
-u64 padButtons = 0;
-u64 padButtonsOld = 0;
 HidNpadFullKeyState g_NPad;
 
-float slomoValue = 0.5;
+uint64_t* setFps = 0;
+
+float slomoSpeed = 1;
 bool doSlomo = true;
+
+//0xdbccd8
+typedef void(*setSlomo)(float param1, float param2, int64_t param3);
 
 //0x10534a0
 typedef u64(*EnableDebugMinimap)(int64_t lua_state);
@@ -35,10 +43,13 @@ typedef void(*ShowScenario)(void);
 //0x1041010
 typedef void(*HideScenario)(void);
 
-//0x103e300
+//0x103e3f0
+typedef u64 (*killBoss)(void);
+
+//0x103e300 or 0x107ff70 == +0x41C70 on 2.1
 typedef u64(*killEmmi)(void);
 
-//0x103e1f0
+//0x103e1f0 or 0x107fe60 == +0x41C70 on 2.1
 typedef u64(*killEnemies)(void);
 
 //0x103ec60
@@ -54,7 +65,7 @@ typedef u64(*showFps)(void);
 typedef void(*IsGamePaused)(uint64_t param1);
 
 //0x103efb0
-typedef u64(*setFps)(int64_t param1);
+//typedef u64(*setFps)(int64_t param1);
 
 //0x1038c10
 typedef u64(*giveAllItems)(void);
@@ -62,7 +73,7 @@ typedef u64(*giveAllItems)(void);
 //0x103e1a0
 typedef u64(*killPlayer)(void);
 
-//0x1036210
+//0x1036210 or 0x1077e90 == +0x41C80 on v2.1
 typedef u64(*pauseGame)(void);
 
 //0xae6c10
@@ -101,18 +112,20 @@ void initplVar3(int64_t* var){
 }
 
 namespace outFuncs{
+    setSlomo setGameSpeed;
     SetIAmACheater setCheater;
     TestGiveItem testGivePlayerItem;
     TestGiveItem2 testGivePlayerItem2;
     HideScenario hideGameScenario;
     ShowScenario showGameScenario;
     DEBUG_MakePlayerInvincible makePlayerInvincible;
+    killBoss killCurrentBoss;
     killEmmi killCurrentEmmi;
     killEnemies killAllEnemies;
     recoverLife recoverPlayerLife;
     recoverMissiles recoverPlayerMissiles;
     showFps showGameFps;
-    setFps setGameFps;
+    //setFps setGameFps;
     IsGamePaused isGamePaused;
     giveAllItems givePlayerAllItems;
     giveItem givePlayerItem;
@@ -126,31 +139,37 @@ namespace outFuncs{
     unk_dc47a0 unk_dc47a0_func;
 }
 
-void initExternFuncs(){
-    outFuncs::setCheater = (SetIAmACheater)(exl::util::modules::GetTargetOffset(0x1054de0));
-    outFuncs::testGivePlayerItem = (TestGiveItem)(exl::util::modules::GetTargetOffset(0x110075c));
-    outFuncs::testGivePlayerItem2 = (TestGiveItem2)(exl::util::modules::GetTargetOffset(0x11007c8));
-    outFuncs::hideGameScenario = (HideScenario)(exl::util::modules::GetTargetOffset(0x1041010));
-    outFuncs::showGameScenario = (ShowScenario)(exl::util::modules::GetTargetOffset(0x1040fe0));
-    outFuncs::makePlayerInvincible = (DEBUG_MakePlayerInvincible)(exl::util::modules::GetTargetOffset(0x103e0e0));
-    outFuncs::killCurrentEmmi = (killEmmi)(exl::util::modules::GetTargetOffset(0x103e300));
-    outFuncs::killAllEnemies = (killEnemies)(exl::util::modules::GetTargetOffset(0x103e1f0));
-    outFuncs::givePlayerAllItems = (giveAllItems)(exl::util::modules::GetTargetOffset(0x1038c10));
-    outFuncs::givePlayerItem = (giveItem)(exl::util::modules::GetTargetOffset(0xae6c10));
-    outFuncs::givePlayerItem2 = (giveItem2)(exl::util::modules::GetTargetOffset(0x11008c8));
-    outFuncs::killPlayerFunc = (killPlayer)(exl::util::modules::GetTargetOffset(0x103e1a0));
-    outFuncs::togglePause = (pauseGame)(exl::util::modules::GetTargetOffset(0x1036210));
-    outFuncs::unk_db2798_func = (unk_db2798)(exl::util::modules::GetTargetOffset(0xdb2798));
-    outFuncs::unk_302b54_func = (unk_302b54)(exl::util::modules::GetTargetOffset(0x302b54));
-    outFuncs::unk_a1d158_func = (unk_a1d158)(exl::util::modules::GetTargetOffset(0xa1d158));
-    outFuncs::unk_a1d258_func = (unk_a1d258)(exl::util::modules::GetTargetOffset(0xa1d258));
-    outFuncs::unk_dc47a0_func = (unk_dc47a0)(exl::util::modules::GetTargetOffset(0xdc47a0));
-    outFuncs::setGameFps = (setFps)(exl::util::modules::GetTargetOffset(0x103efb0));
-    outFuncs::showGameFps = (showFps)(exl::util::modules::GetTargetOffset(0x103dfe0));
-    outFuncs::isGamePaused = (IsGamePaused)(exl::util::modules::GetTargetOffset(0x1036250));
-    outFuncs::recoverPlayerLife = (recoverLife)(exl::util::modules::GetTargetOffset(0x103ec60));
-    outFuncs::recoverPlayerMissiles = (recoverMissiles)(exl::util::modules::GetTargetOffset(0x104d150));
+void initExternFuncs(){//ermmm epic optimisation
+    outFuncs::setGameSpeed = (setSlomo)(g_BaseAddress + 0xdbccd8 + (0x39FA0 * g_Version));
+    outFuncs::setCheater = (SetIAmACheater)(g_BaseAddress + 0x1054de0 + (0x41C80 * g_Version));
+    outFuncs::testGivePlayerItem = (TestGiveItem)(g_BaseAddress + 0x110075c + (0x41C80 * g_Version));
+    outFuncs::testGivePlayerItem2 = (TestGiveItem2)(g_BaseAddress + 0x11007c8 + (0x41C80 * g_Version));
+    outFuncs::hideGameScenario = (HideScenario)(g_BaseAddress + 0x1041010 + (0x41C70 * g_Version));
+    outFuncs::showGameScenario = (ShowScenario)(g_BaseAddress + 0x1040fe0 + (0x41C70 * g_Version));
+    outFuncs::makePlayerInvincible = (DEBUG_MakePlayerInvincible)(g_BaseAddress + 0x103e0e0 + (0x41C70 * g_Version));//0x41C70
+    outFuncs::killCurrentBoss = (killBoss)(g_BaseAddress + 0x103e3f0 + (0x41C70 * g_Version));
+    outFuncs::killCurrentEmmi = (killEmmi)(g_BaseAddress + 0x103e300 + (0x41C70 * g_Version));//0x41C70
+    outFuncs::killAllEnemies = (killEnemies)(g_BaseAddress + 0x103e1f0 + (0x41C70 * g_Version));//0x41C70
+    outFuncs::givePlayerAllItems = (giveAllItems)(g_BaseAddress + 0x1038c10 + (0x41C70 * g_Version));//0x41C70
+    outFuncs::givePlayerItem = (giveItem)(g_BaseAddress + 0xae6c10 + (0x41C80 * g_Version));
+    outFuncs::givePlayerItem2 = (giveItem2)(g_BaseAddress + 0x11008c8 + (0x41C70 * g_Version));
+    outFuncs::killPlayerFunc = (killPlayer)(g_BaseAddress + 0x103e1a0 + (0x41C70 * g_Version));//0x41C70
+    outFuncs::togglePause = (pauseGame)(g_BaseAddress + 0x1036210 + (0x41C80 * g_Version));
+    outFuncs::unk_db2798_func = (unk_db2798)(g_BaseAddress + 0xdb2798 + (0x41C80 * g_Version));
+    outFuncs::unk_302b54_func = (unk_302b54)(g_BaseAddress + 0x302b54 + (0x41C80 * g_Version));
+    outFuncs::unk_a1d158_func = (unk_a1d158)(g_BaseAddress + 0xa1d158 + (0x41C80 * g_Version));
+    outFuncs::unk_a1d258_func = (unk_a1d258)(g_BaseAddress + 0xa1d258 + (0x41C80 * g_Version));
+    outFuncs::unk_dc47a0_func = (unk_dc47a0)(g_BaseAddress + 0xdc47a0 + (0x41C80 * g_Version));
+    //outFuncs::setGameFps = (setFps)(g_BaseAddress + 0x103efb0 + (0x41DA0 * g_Version));//0x41DA0
+    outFuncs::showGameFps = (showFps)(g_BaseAddress + 0x103dfe0 + (0x41C80 * g_Version));
+    outFuncs::isGamePaused = (IsGamePaused)(g_BaseAddress + 0x1036250 + (0x41C80 * g_Version));
+    outFuncs::recoverPlayerLife = (recoverLife)(g_BaseAddress + 0x103ec60 + (0x41DA0 * g_Version));//0x41DA0
+    outFuncs::recoverPlayerMissiles = (recoverMissiles)(g_BaseAddress + 0x104d150 + (0x41DB0 * g_Version));//0x41DB0
 }
+
+uintptr_t sigScanMain(uint32_t scanOps[], int scanSize);
+
+#define frameRate(delta) (*setFps = (uint64_t)(1000.0 / delta))
 
 bool checkInputs();
 
@@ -173,8 +192,8 @@ struct{//from UpdatePlayerPawn's Player
     uintptr_t fIFrames = 0x14FB8;//float; doesnt work on console
     
     //Morph
-    uintptr_t morphX = 0x789254;//float
-    uintptr_t morphY = 0x789264;//float
+    uintptr_t morphX = 0x789254;//float doesnt work
+    uintptr_t morphY = 0x789264;//float doesnt work
     uintptr_t morphXVel = 0x7897C8;//float
     uintptr_t morphYVel = 0x7897CC;//float
     uintptr_t morphGravity = 0x7896F4;//bool
@@ -197,23 +216,33 @@ float noclipPos[4] = { 0.0 };
 float noclipDif[2] = { 0.0 };
 bool isNoclip = false;
 
+//Individual Room vars
+float roomIL[3] = {0.0};
+float finishIL[3] = {0.0};
+float finishDelta = 700;
+float newPosX = 0;
+float newPosY = 0;
+float newPosZ = 0;
 bool ILonce = false;//Set a new entrance
+bool ILnext = false;//Set next entrance as finish line
 bool ILallowTp = false;//Ignores any teleport that isnt a door tm
 bool ILreset = false;//Whether to teleport
+bool ILGauntlet = false;//Whether only the finish line teleports
 bool ILForce = false;//Force all teleport types
 
 int avoidRepeat = 30;//testing var to find the optimal time to ignore combos without feeling unresponsive, seems this function runs once per frame so its framecount
 int repeatInput = 0;//ignore input for X cycles
 int waitTime = 300 * 1000000;//milliseconds to wait for frame advance to avoid polluting inputs, svcSleep counts in nanoseconds so X*1,000,000
 bool waitOne = false;//testing for a frame advance
-bool ourFreeze = false;
+bool ourFreeze = false;//are we the one pausing or is the game paused
 bool ignoreCombo = false;//ignore combo input on the games side
-u64 comboButtons = 0;
+u64 comboButtons = 0;//buttons to make the game ignore
 bool turboButtons = false;//flip button state every frame
 bool turboSwitcher = false;//used to rapidly switch button states
-bool getCombo = false;
-u64 turboCombo = 0;
-u64 storeForFA = 0;
+bool getCombo = false;//do we get a turbo combo
+u64 turboCombo = 0;//buttons to turbo
+u64 storeForFA = 0;//buttons from the frame before frame advancing
+u64 storeForWaitOne = 0;//buttons we are currently holding for this frame
 
 //Skew stuff
 float desiredSkew = 0.0;
@@ -227,9 +256,6 @@ bool forceCSpark = false;
 
 //Ignore Sub Area Deaths vars
 bool ignoreOobDeath = true;
-
-//Individual Room vars
-float roomIL[3] = {0.0};
 
 void TeleportPlayer(uintptr_t player, float location[4]);
 
