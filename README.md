@@ -4,7 +4,7 @@ A Metroid Dread Practice Mod intended to remove some of the tedium of practicing
 # Features
 This list of features is in no particular order and was last updated for version 0.5.
  Button Combos(All Button Combos need DPAD Down held unless specified):
- - Toggle Noclip (use Left Stick to fly around): (Only) L + DPAD Left
+ - Toggle Noclip (use Right Stick to fly around): (Only) L + DPAD Left
  - Return to Noclip start position: (Only) L + DPAD Right
  - Toggle Out of Bounds Deaths: Click LStick
  - Fully Restore Health and Missiles: Minus
