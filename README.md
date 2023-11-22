@@ -42,6 +42,8 @@ I also have the offsets for Samus' X and Y velocities for morph and unmorphed st
 # Note
 This project is a work in progress. Some features look like garbage, some of them have missing functionality.
 
+#Need help? Message me on discord @phazonjunky
+
 # Credit
 - Atmosphère: A great reference and guide.
 - [libnx](https://github.com/switchbrew/libnx/) provides countless tools and documents that helped in the development of this mod
