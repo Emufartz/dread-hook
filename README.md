@@ -42,8 +42,7 @@ I also have the offsets for Samus' X and Y velocities for morph and unmorphed st
 # Note
 This project is a work in progress. Some features look like garbage, some of them have missing functionality.
 
-#Need help?
-Message me on discord @phazonjunky
+# Need help? Message me on discord @phazonjunky
 
 # Credit
 - Atmosphère: A great reference and guide.
