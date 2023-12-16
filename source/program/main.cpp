@@ -2,449 +2,278 @@
 
 #include "main.h"
 
-int64_t unkItem = 0;
-int64_t unkItem2 = 0;
-int64_t unkItem10 = 0;
-int64_t unkDat = 0;
-int64_t unkDat2 = 0;
-uint64_t unkDat3 = 0;
-int64_t lVar1 = 0;
-uint64_t lVar2 = 0;
-int64_t* plVar3 = 0;
-float thisItemVal = 0;
+int64_t curItem = 0;
+int64_t curItemName = 0;
+int64_t itemNamesArray = 0;
+uint64_t playerAeion = 0;
+CHealthComponent* plrHealthComp = 0;
 
-void duplicateGiveAllItems(){
-    unkItem = 0;
-    unkItem2 = 0;
-    unkItem10 = 0;
-    unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-    unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-    unkDat3 = *(*(uint64_t**)(g_BaseAddress+0x1c626b8));
-    //unkItem = dwadwa *(int64_t*)(g_BaseAddress+0x1caf988); old
-    //unkDat = (g_BaseAddress + 0x1cee0e0);
-    //unkDat2 = *(int64_t*)(g_BaseAddress + 0x1cee108);
-    //unkDat3 = *(int64_t**)(g_BaseAddress + 0x1cee310);
+const int menuEntriesMax = 32;
+menuEntry menuText[menuEntriesMax];
+float screenPos[2];
+float worldPos[3];
+float unkF1 = 0;
+float unkF2 = 0;
+float scaledX = 1600.0;
+float scaledY = 900.0;
 
-    lVar1 = outFuncs::unk_db2798_func(unkDat3);
-    if (lVar1) {
-        //lVar2 = outFuncs::unk_302b54_func(lVar1);
-        //if (lVar2) {
-        //    outFuncs::unk_a1d158_func(2200.0, lVar1);
-        //    outFuncs::unk_a1d258_func(2200.0, lVar2, 0x0, 0x1);
-        //}
-        //plVar3 = *(int64_t **)(lVar1 + 0x1b8);
-        //initplVar3(plVar3);
-        //if (plVar3) {
-        //    unkplVar3_170_func(1099.0, plVar3);
-        //    unkplVar3_168_func(1099.0, plVar3, 0x1);
-        //}
-        lVar1 = *(int64_t*)(lVar1 + 0x270);
+int drawTextOnScreen(float damageDealt, long param_2, float drawPos[3], float drawColor[3], const wchar_t* string) {
+    uint **ppuVar1;
+    long **ppTVar5;
+    long *tempStr;
+    uint32_t *puVar5;
+    int iVar6;
+    uint **ppuVar7;
+    uint **ppuVar8;
+    uint **ppuVar9;
+    long *formattedText;
 
-        //unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-        //unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-        //unkDat3 = *(*(uint64_t**)(g_BaseAddress+0x1c626b8));
-
-        if (lVar1) {
-            for(int i = 0; i < 37; i++){
-                unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[i]);
-                unkItem2 = *(int64_t*)(unkItem+0x10);
-
-                if(i < 10)
-                    thisItemVal = itemVals[i];
-                else
-                    thisItemVal = 1.0;
-
-                if (unkItem2 == (unkDat2+0x10)) {
-                    outFuncs::givePlayerItem((unkItem+0x10), unkItem, unkDat);
-                }
-                outFuncs::givePlayerItem2(thisItemVal, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
+    if (*(ulong *)(param_2 + 0x25a8) == *(ulong *)(param_2 + 0x25e0) >> 5) {
+        ppuVar1 = ppuVar7 = *(uint ***)(param_2 + 0x25b0);
+  
+        for (ppuVar8 = (uint **)ppuVar7[3]; ppuVar8; ppuVar8 = (uint **)ppuVar8[3]) {
+            ppuVar9 = ppuVar8;
+            if (*(float *)((long)ppuVar1 + 0x8) <= *(float *)((long)ppuVar8 + 0x8)) {
+                ppuVar9 = ppuVar1;
             }
-if(false){
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(799.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(0.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);//not sure
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1000, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);//not sure
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1000, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1000, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1000, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(150, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(150, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(10, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(10, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
-//            
-//            unkItem = *(int64_t*)(g_BaseAddress+0x1caf000 + itemOffs[]);
-//            unkItem2 = *(int64_t*)(unkItem+0x10);
-//            unkDat = *(uint64_t*)(g_BaseAddress+0x1c626c0);
-//            unkDat2 = *(*(uint64_t**)(g_BaseAddress+0x1c62698));
-//
-//            if (unkItem == unkDat2+0x10) {
-//                outFuncs::givePlayerItem(unkItem+0x10, unkItem, unkDat);
-//            }
-//            outFuncs::givePlayerItem2(1.0, 0.0, lVar1, (unkItem+0x10), 0x1, 0x1, 0x1);
+            ppuVar1 = ppuVar9;
+        }
+        ppuVar8 = 0x0;
+
+        do {
+            ppuVar9 = ppuVar8;
+            ppuVar8 = ppuVar7;
+            if (!ppuVar8) break;
+            ppuVar7 = (uint **)ppuVar8[3];
+        } while (ppuVar8 != ppuVar1);
+
+        if(ppuVar8){
+            if (!ppuVar9) {
+                *(uint64_t *)(param_2 + 0x25b0) = (uint64_t)ppuVar7;
+            }
+            else {
+                ppuVar9[3] = (uint *)ppuVar7;
+                if (*(uint ***)(param_2 + 0x25b8) == ppuVar1) {
+                    *(uint ***)(param_2 + 0x25b8) = ppuVar9;
+                    iVar6 = --(*(int *)(param_2 + 0x25a8));
+                }
+            }
+
+            iVar6 = --(*(int *)(param_2 + 0x25a8));
+            if(!iVar6){
+                *(uint64_t *)(param_2 + 0x25b0) = 0;
+                *(uint64_t *)(param_2 + 0x25b8) = 0;
+            }
+
+            if (*ppuVar1) {
+                outFuncs::FUN_7100219548(DAT_7101cee300,*ppuVar1,0);
+                *ppuVar1 = 0x0;
+            }
+            outFuncs::UnkDebugTextDtor(*(long **)(param_2 + 0x25c0),(uint64_t*)ppuVar1);
+        }
+    }
+
+    ppTVar5 = (long **)outFuncs::FUN_7100075454(*(long *)(param_2 + 0x25c0),0x20,0x8,*(float *)(param_2 + 0x25c8));
+    if (!ppTVar5) {
+        ppTVar5 = *(long ***)(param_2 + 0x25b8);
+    } else {
+        ppTVar5[0] = 0x0;
+        ppTVar5[1] = 0x0;
+        ppTVar5[2] = 0x0;
+        ppTVar5[3] = 0x0;
+        if (!(*(int *)(param_2 + 0x25a8))) {
+            iVar6 = 1;
+            *(long ***)(param_2 + 0x25b0) = ppTVar5;
+        }
+        else {
+            *(long ***)(*(long *)(param_2 + 0x25b8) + 0x18) = ppTVar5;
+            ppTVar5[3] = 0x0;
+            iVar6 = *(int *)(param_2 + 0x25a8) + 1;
+        }
+        *(long ***)(param_2 + 0x25b8) = ppTVar5;
+        *(int *)(param_2 + 0x25a8) = iVar6;//advances duration timer?
+    }
+    *(float *)((long)ppTVar5 + 0x8) = 1.0;// duration
+    *(float *)((long)ppTVar5 + 0xc) = drawPos[0];
+    *(float *)((long)ppTVar5 + 0x10) = drawPos[1];
+    *(float *)((long)ppTVar5 + 0x14) = drawPos[2];
+    formattedText = 0x0;
+    outFuncs::FUN_7100d9977c(*(long ***)(*(uint64_t*)DAT_7101cee300 + 0x218),0,&formattedText);
+    outFuncs::FUN_7100219650(*(uint64_t*)DAT_7101cee300,formattedText,2);
+    *ppTVar5 = formattedText;
+    if (formattedText) {
+        outFuncs::HashString(&formattedText,"digital_small",true);
+        puVar5 = outFuncs::FUN_71011738ec(*(uint64_t*)DAT_71726c5788,&formattedText);
+        tempStr = (long *)DAT_7101cee108;
+        if (DAT_7101cee108) {
+            if ((formattedText) &&
+                (iVar6 = --(*(int *)(formattedText + 1)), !iVar6)) {
+                outFuncs::FUN_7100080124(tempStr,formattedText);//ReleaseStringInstance
+                tempStr = (long *)DAT_7101cee108;
+            }
+            formattedText = (long*)((long)tempStr + 0x10);
+        }
+        if (puVar5) {
+            (*ppTVar5)[0x27] = (long)puVar5;
+            outFuncs::FUN_71001c3a90((*ppTVar5)[0x26],(long)(puVar5 + 0x6));
+            *(char *)((long)(*ppTVar5) + 0x11b) = 0x1;
+            outFuncs::FUN_710020bdb8((long)(*ppTVar5 + 0x4),-1000);
+            *(float *)((*ppTVar5)[0x26] + 0x94) = 1.0;//something with text size
+            *(float *)((*ppTVar5)[0x26] + 0x98) = 1.0;//^^
+            *(char *)((long)(*ppTVar5) + 0x11b) = 0x1;
+            *(char *)(*(long *)((*ppTVar5)[0x26] + 0x78) + 0x1af) = 0;
+            outFuncs::FUN_710019d854(*(long *)((*ppTVar5)[0x26] + 0x78));
+            outFuncs::UnkSetTextStyle(drawColor[0],drawColor[1],drawColor[2],1.0,*(long *)((*ppTVar5)[0x26] + 0x78));
+            outFuncs::UnkEnemyLifeW2S(*(uint64_t*)DAT_7101cee300,drawPos,&unkF2,&unkF1,0,0,1);
+            screenPos[0] = (scaledY / scaledX) * ((unkF1 * 2) / scaledY - 1.0);
+            screenPos[1] = (unkF2 * 2) / scaledX - 1.0;
+            outFuncs::UnkEnemyLifeFunc((long)(*ppTVar5) + 0x20, screenPos);
+            if(!string)
+                outFuncs::swprintf((wchar_t *)formattedText,0x20,L"%.2f", damageDealt);
+            else
+                outFuncs::swprintf((wchar_t *)formattedText,0x20,string);
+            outFuncs::CopyWideStringAndParse((*ppTVar5)[0x26],(wchar_t *)formattedText);
+            *(char *)((long)(*ppTVar5) + 0x11b) = 0x1;
+        }
+    }
+
+    for(int i = 0; i < menuEntriesMax; i++){
+        if(menuText[i].ptr && *(float*)(menuText[i].ptr + 0x10))
+            continue;
+
+        menuText[i].ptr = (int64_t)ppTVar5;
+        menuText[i].offs[0] = drawPos[0] - g_Player->posX;
+        menuText[i].offs[1] = drawPos[1] - g_Player->posY;
+        return i;
+    }
+
+    return 0;
 }
-            outFuncs::unk_dc47a0_func(unkDat3);
+
+void givePlayerItems(float inventoryArr[37]){
+    curItem = 0;
+    curItemName = 0;
+    itemNamesArray = *(uint64_t*)(g_BaseAddress+0x1c626c0 + (0x579D0 * g_Version));
+
+    g_StaticPlayer = outFuncs::GetPlayerFromGM(*g_GameManager);
+    if (g_StaticPlayer) {
+        playerAeion = outFuncs::unk_302b54_func(g_StaticPlayer);
+        if (playerAeion) {
+            outFuncs::unk_a1d158_func(2200.0, playerAeion);
+            outFuncs::unk_a1d258_func(2200.0, playerAeion, 0x0, 0x1);
+        }
+        plrHealthComp = g_StaticPlayer->healthComp;
+        initplrHealthComp(plrHealthComp);
+        if (plrHealthComp) {
+            unkHealthCompFunc1(1099.0, plrHealthComp);
+            unkHealthCompFunc(1099.0, plrHealthComp, 0x1);
+        }
+        g_StaticPlayerItems = *(uint64_t**)((uint64_t)g_StaticPlayer + 0x270);
+
+        if (g_StaticPlayerItems) {
+            for(int i = 0; i < 37; i++){
+                if(g_Version)
+                    curItem = *(int64_t*)(g_BaseAddress + itemOffsV21[i]);
+                else
+                    curItem = *(int64_t*)(g_BaseAddress + itemOffs[i]);
+                curItemName = *(int64_t*)(curItem+0x10);
+
+                if (!curItemName) {
+                    outFuncs::givePlayerItem((curItem+0x10), curItem, itemNamesArray);
+                }
+                outFuncs::givePlayerItem2(inventoryArr[i], 0.0, g_StaticPlayerItems, (curItem+0x10), 0x1, 0x1, 0x1);
+            }
+
+            outFuncs::unk_dc47a0_func(*g_GameManager);
         }
     }
 }
 
+void handleFrameAdvance(){
+    g_NPad.buttons = storeForFA;
+    
+    if(((g_ButtonState(HidNpadButton_Y) && g_ButtonState(HidNpadButton_A)) && g_ButtonState(HidNpadButton_Down)) || waitOne){
+        //Advance one frame
+        if(storeForWaitOne != (storeForFA))
+            storeForWaitOne = storeForFA;
+        
+        if(ourFreeze || !waitOne){
+            repeatInput = avoidRepeat;
+            outFuncs::togglePause();
+            waitOne = true;
+            svcSleepThread(waitTime);
+        } else {
+            repeatInput = 10;
+            outFuncs::togglePause();
+            waitOne = false;
+        }
+    }
+}
+
+float drawTest[2] = {0};
+int testIdx1 = 0;
+int testIdx2 = 0;
+bool testUpdate = false;
+u8 drawTextMod = 0;
+void updateMenu() {
+    if(showMenu){
+        float drawPos[3] = {g_Player->posX,g_Player->posY, 60.0};
+        float drawStyle[3] = {0.9, 0.0, 1.0};
+        if(drawTest[0] != g_Player->posX || drawTest[1] != g_Player->posY){
+            drawTest[0] = g_Player->posX;
+            drawTest[1] = g_Player->posY;
+            testUpdate = true;
+        }
+
+        if(justOpened || testUpdate){
+
+            if(menuText[testIdx1].ptr){
+                if(*(float*)(menuText[testIdx1].ptr + 0x8))
+                    *(float*)(menuText[testIdx1].ptr + 0x8) = 0.0;
+                menuText[testIdx1].ptr = 0x0;
+                testIdx1 = 0;
+            }
+            if(menuText[testIdx2].ptr){
+                if(*(float*)(menuText[testIdx2].ptr + 0x8))
+                    *(float*)(menuText[testIdx2].ptr + 0x8) = 0.0;
+                menuText[testIdx2].ptr = 0x0;
+                testIdx2 = 0;
+            }
+
+            drawPos[0] = g_Player->posX;
+            drawPos[1] = g_Player->posY;
+            testIdx1 = drawTextOnScreen(drawTest[0], **(long**)(g_BaseAddress + 0x1c78f28), drawPos, drawStyle, 0);
+            drawPos[1] = g_Player->posY - 25.0;
+            testIdx2 = drawTextOnScreen(drawTest[1], **(long**)(g_BaseAddress + 0x1c78f28), drawPos, drawStyle, 0);
+        }
+    }
+
+    //Manage menu text items
+    for(int i = 0; i < menuEntriesMax; i++){
+        if(menuText[i].ptr){
+            if(showMenu){
+                if(*(float*)(menuText[i].ptr + 0xc))
+                    *(float*)(menuText[i].ptr + 0xc) = g_Player->posX + menuText[i].offs[0];
+                if(*(float*)(menuText[i].ptr + 0x10))
+                    *(float*)(menuText[i].ptr + 0x10) = g_Player->posY + menuText[i].offs[1];
+
+                if(*(float*)(menuText[i].ptr + 0x8))
+                    *(float*)(menuText[i].ptr + 0x8) = 1.0;
+            } else {
+                if(*(float*)(menuText[i].ptr + 0x8))
+                    *(float*)(menuText[i].ptr + 0x8) = 0.0;
+                menuText[i].ptr = 0x0;
+            }
+        }
+    }
+
+    justOpened = false;
+    testUpdate = false;
+}
+
+bool snapShotCreated = false;
+char* snapshotID;
+char* checkpointKey;
 bool checkInputs(){
     //Store "Last Frames" inputs to make Frame Advance work
     storeForFA = comboButtons;
@@ -453,172 +282,241 @@ bool checkInputs(){
         noclipDif[0] += ((g_NPad.analog_stick_r.x * 40) / 0x7FFF);
         noclipDif[1] += ((g_NPad.analog_stick_r.y * 40) / 0x7FFF);
 
-        *(float*)(g_PlayerPawn+playerOffs.posX) = noclipPos[0] + noclipDif[0];
-        *(float*)(g_PlayerPawn+playerOffs.posY) = noclipPos[1] + noclipDif[1];
-        *(float*)(g_PlayerPawn+playerOffs.morphX) = noclipPos[2] + noclipDif[0];
-        *(float*)(g_PlayerPawn+playerOffs.morphY) = noclipPos[3] + noclipDif[1];
+        g_Player->posX = noclipPos[0] + noclipDif[0];
+        g_Player->posY = noclipPos[1] + noclipDif[1];
+        if(g_Morph){
+            g_Morph->posX = noclipPos[2] + noclipDif[0];
+            g_Morph->posY = noclipPos[3] + noclipDif[1];
+        }
     } else {
         noclipDif[0] = 0;
         noclipDif[1] = 0;
     }
 
+    updateMenu();
+
     if(repeatInput >= 1){
         repeatInput--;
-        if(!waitOne){
-            return true;
-        }
+        return true;
     }
 
     if(g_ButtonState(HidNpadButton_Up)){//Toggle Turbo
         turboButtons = !turboButtons;
         //testing
 
-        //outFuncs::givePlayerAllItems(); //works, 7 tanks, 150 missiles, and everything else except power bombs and hyper beam
-        //outFuncs::showGameFps(); //does nothing?
-        //outFuncs::killPlayerFunc(); //works
-        //duplicateGiveAllItems(); //doesnt really work right now, lots of undefined reads so probably a bad typedef'd arg
-        //outFuncs::setCheater(); //does nothing?
-        //outFuncs::killCurrentEmmi(); //works
-        //if(g_luaState)
-        //    outFuncs::makePlayerInvincible(g_luaState);
-        //outFuncs::killAllEnemies(); //works
-
-        //set fps works
-        //uint64_t* setFps = (uint64_t*)((**(uintptr_t**)(g_BaseAddress + 0x1c62718)) + 0x38);
-        //*setFps = (uint64_t)(1000.0 / 30.0);
-        
+        //outFuncs::showGameFps(1);
+        //outFuncs::killCurrentBoss(); //works
         //outFuncs::hideGameScenario(); //disables z flushing(?) like when out of bounds in a source game
-
-        //if(g_luaState)
-        //    outFuncs::isGamePaused(g_luaState);
-
+        //outFuncs::TRntString256Ctor((uint64_t*)(g_BaseAddress + 0x1ff2000), (char*)"EDITOR");
+        //outFuncs::ChangeGameMode((uint64_t*)(g_BaseAddress + 0x1c626b8), (uint64_t*)(g_BaseAddress + 0x1ff2000));
+        
         repeatInput = 20;
         getCombo = true;
         comboButtons = 0;
         if(turboButtons){//delete testing shit later
             //outFuncs::showGameScenario(); //fixes z flushing
-            //*setFps = (uint64_t)(1000.0 / 60.0);
             svcSleepThread(waitTime);//Wait for a bit so the player can hold the button(s) they want turbo'd
         }
         return true;
     }
 
-    if(g_ButtonState(HidNpadButton_L)){
+    if(g_ButtonXState(HidNpadButton_Right)){
+        showMenu = !showMenu;
+        if(showMenu){
+            justOpened = true;
+        }
+        repeatInput = avoidRepeat;
+        return true;
+    }
+
+    //if(g_ButtonXState(HidNpadButton_Left) && false){
+    //    if(g_luaState && !snapShotCreated){
+    //        outFuncs::SaveGameToSnapshotFunc(g_luaState, (char*)"amogus");
+    //        snapShotCreated = true;
+    //        repeatInput = 20;
+    //        return true;
+    //    }
+    //    if(g_luaState && snapShotCreated){
+    //        outFuncs::SaveSnapshotToCheckpointFunc(g_luaState, (char*)"amogus", (char*)"amoguscheck", "1", true);
+    //        repeatInput = 20;
+    //        return true;
+    //    }
+    //}
+
+    if(g_ButtonState(HidNpadButton_R)){
+        comboButtons = 0;
+        
+        if(g_ButtonState(HidNpadButton_Left)){
+            comboButtons |= (HidNpadButton_R | HidNpadButton_Left);
+            slomoSpeed -= 0.05;
+            repeatInput = 5;
+            outFuncs::setGameSpeed(slomoSpeed, 0, *g_GameManager);
+            return true;
+        }
+        if(g_ButtonState(HidNpadButton_Right)){
+            comboButtons |= (HidNpadButton_R | HidNpadButton_Right);
+            slomoSpeed += 0.05;
+            repeatInput = 5;
+            outFuncs::setGameSpeed(slomoSpeed, 0, *g_GameManager);
+            return true;
+        }
+        if(g_ButtonState(HidNpadButton_Minus)){
+            comboButtons |= (HidNpadButton_R | HidNpadButton_Minus);
+            slomoSpeed = 1;
+            repeatInput = avoidRepeat;
+            outFuncs::setGameSpeed(slomoSpeed, 0, *g_GameManager);
+            return true;
+        }
+    }
+
+    if(g_ButtonState(HidNpadButton_L) && !g_ButtonState(HidNpadButton_Down)){
         comboButtons = 0;
         if(g_ButtonState(HidNpadButton_Left)){
             comboButtons |= HidNpadButton_Left | HidNpadButton_L;
             
+            repeatInput = 10;
             isNoclip = !isNoclip;
             if(isNoclip){
                 repeatInput = avoidRepeat;
-                noclipPos[0] = *(float*)(g_PlayerPawn+playerOffs.posX);
-                noclipPos[1] = *(float*)(g_PlayerPawn+playerOffs.posY);
-                noclipPos[2] = *(float*)(g_PlayerPawn+playerOffs.morphX);
-                noclipPos[3] = *(float*)(g_PlayerPawn+playerOffs.morphY);
-            } else {
-                repeatInput = 10;
+                noclipPos[0] = g_Player->posX;
+                noclipPos[1] = g_Player->posY;
+                if(g_Morph){
+                    noclipPos[2] = g_Morph->posX;
+                    noclipPos[3] = g_Morph->posY;
+                }
             }
             return true;
         }
         if(g_ButtonState(HidNpadButton_Right)){
             if(isNoclip){
-                repeatInput = 10;
-                *(float*)(g_PlayerPawn+playerOffs.posX) = noclipPos[0];
-                *(float*)(g_PlayerPawn+playerOffs.posY) = noclipPos[1];
-                *(float*)(g_PlayerPawn+playerOffs.morphX) = noclipPos[2];
-                *(float*)(g_PlayerPawn+playerOffs.morphY) = noclipPos[3];
+                TeleportPlayer(g_Player, g_Morph, noclipPos);
                 isNoclip = false;
+                repeatInput = 10;
             }
             return true;
         }
         return false;
     }
 
-    if(!g_ButtonState(HidNpadButton_Down) && !waitOne){//If we arent trying to enter a combo then obviously dont listen and allow input
+    //If we arent trying to enter a combo or are using Frame Advance, don't listen and allow input
+    if(!g_ButtonState(HidNpadButton_Down) || waitOne){
         comboButtons = 0;
+        //if(g_luaState){
+        //    outFuncs::setDebugMiniMap(g_luaState, true);
+        //}
         return false;
     } else {
         comboButtons |= HidNpadButton_Down;
         comboButtons ^= HidNpadButton_Down;
 
-        if(!g_ButtonXState(HidNpadButton_Down) && !waitOne){//If we are holding more than just DPAD Down
+        //If we are just holding DPAD Down still ignore inputs
+        if(!g_ButtonXState(HidNpadButton_Down)){
 
+            //Give All Items
+            if(g_ButtonState(HidNpadButton_Plus)){
+                givePlayerItems(itemVals);
+                repeatInput = avoidRepeat;
+                return true;
+            }
+
+            //Fill missiles and health
             if(g_ButtonState(HidNpadButton_Minus)){
-                //Fill missiles and health
                 outFuncs::recoverPlayerLife();
                 outFuncs::recoverPlayerMissiles();
                 repeatInput = avoidRepeat;
                 return true;
             }
 
+            //Toggle OOB Ignore
             if(g_ButtonState(HidNpadButton_StickL)){
-                //Toggle OOB Ignore
                 ignoreOobDeath = !ignoreOobDeath;
                 repeatInput = avoidRepeat;
                 return true;
             }
 
-            //#pragma region hidecombos
-            if(g_ButtonState(HidNpadButton_ZL) && g_ButtonState(HidNpadButton_StickR)){
-                //Toggle Room IL
-                ILreset = !ILreset;
-                repeatInput = avoidRepeat;
-                return true;
+            //Room IL, Room IL Gauntlet, Store Pos and Tele Pos
+            if(g_ButtonState(HidNpadButton_StickR)){
+                if(g_ButtonState(HidNpadButton_ZR)){
+                    //Store Next Room Entrance
+                    ILonce = false;
+                    repeatInput = avoidRepeat;
+                    return true;
+                }
+
+                if(g_ButtonState(HidNpadButton_ZL)){
+                    //Toggle Room IL
+                    ILreset = !ILreset;
+                    repeatInput = avoidRepeat;
+                    return true;
+                }
+
+                if(g_ButtonState(HidNpadButton_X)){
+                    //Store Next Room Entrance As Finish Line
+                    ILnext = false;
+                    repeatInput = avoidRepeat;
+                    return true;
+                }
+
+                if(g_ButtonState(HidNpadButton_Y)){
+                    //Toggle IL Gauntlet
+                    ILGauntlet = !ILGauntlet;
+                    repeatInput = avoidRepeat;
+                    return true;
+                }
+
+                if(g_ButtonState(HidNpadButton_L)){
+                    //Save Tele pos for Teleport
+                    telePos[0] = g_Player->posX;
+                    telePos[1] = g_Player->posY;
+                    if(g_Morph){
+                        telePos[2] = g_Morph->posX;
+                        telePos[3] = g_Morph->posY;
+                    }
+                    repeatInput = avoidRepeat;
+                    return true;
+                }
+
+                if(g_ButtonState(HidNpadButton_R)){
+                    //Tele to saved pos
+                    if(telePos[0] && telePos[1])
+                        TeleportPlayer(g_Player, g_Morph, telePos);
+                    repeatInput = avoidRepeat;
+                    return true;
+                }
             }
 
-            if(g_ButtonState(HidNpadButton_ZR) && g_ButtonState(HidNpadButton_StickR)){
-                //Store Next Room Entrance
-                ILonce = false;
-                repeatInput = avoidRepeat;
-                return true;
-            }
-
-            if(g_ButtonState(HidNpadButton_L) && g_ButtonState(HidNpadButton_StickR)){
-                //Save Tele pos for Teleport
-                telePos[0] = *(float*)(g_PlayerPawn + playerOffs.posX);
-                telePos[1] = *(float*)(g_PlayerPawn + playerOffs.posY);
-                telePos[2] = *(float*)(g_PlayerPawn + playerOffs.morphX);
-                telePos[3] = *(float*)(g_PlayerPawn + playerOffs.morphY);
-                repeatInput = avoidRepeat;
-                return true;
-            }
-
-            if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_StickR)){
-                //Tele to saved pos
-                TeleportPlayer(g_PlayerPawn, telePos);
-                repeatInput = avoidRepeat;
-                return true;
-            }
-
+            //Tele to map cursor, TODO add a check for in menu
             if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_ZR)){
-                //Tele to map cursor, TODO add a check for in menu
-                float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
-                TeleportPlayer(g_PlayerPawn, tempPos);
-                repeatInput = avoidRepeat;
-                return true;
+                //if(!ourFreeze){
+                    float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
+                    TeleportPlayer(g_Player, g_Morph, tempPos);
+                    repeatInput = avoidRepeat;
+                    return true;
+                //}
             }
 
+            //Toggle cool spark
             if(g_ButtonState(HidNpadButton_A) && g_ButtonState(HidNpadButton_B)){
-                //Toggle cool spark
                 forceCSpark = !forceCSpark;
                 repeatInput = avoidRepeat;
                 return true;
             }
 
+            //Toggle Instant Booster
             if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_Y)){
-                //Toggle Instant Booster
                 setInstantSpeed = !setInstantSpeed;
                 repeatInput = avoidRepeat;
                 return true;
             }
-            //#endregion
-            if(g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_A) && !waitOne){
-                //Toggle Freeze Time
-                outFuncs::togglePause();
 
+            //Toggle Freeze Time
+            if((g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_A))){
+                outFuncs::togglePause();
+                //ourFreeze = !ourFreeze;//Desyncs if unpausing the game manually. Gonna get IsGamePaused working before using this
                 //*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = !*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea);
                 //ourFreeze = (!ourFreeze & *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea));
-                
+                storeForWaitOne = 0;
+
                 repeatInput = avoidRepeat;
                 comboButtons |= (HidNpadButton_X | HidNpadButton_A);//Just in case
                 
@@ -629,22 +527,27 @@ bool checkInputs(){
     return false;
 }
 
-void TeleportPlayer(uintptr_t player, float location[4]){
-    *(float*)(player + playerOffs.posX) = location[0];
-    *(float*)(player + playerOffs.posY) = location[1];
-    *(float*)(player + playerOffs.morphX) = location[2];
-    *(float*)(player + playerOffs.morphY) = location[3];
+void TeleportPlayer(CEntity* player, CEntity* morph, float location[4]){
+    player->posX = location[0];
+    player->posY = location[1];
+    if(morph){
+        g_Morph->posX = location[2];
+        g_Morph->posY = location[3];
+    }
 }
 
 void ManipulateInput(HidNpadCommonState* state){
-    
+    if(storeForWaitOne){
+        state->buttons = (storeForFA & storeForWaitOne);
+        return;
+    }
+
     if(!waitOne){
         if(ignoreCombo){
                 state->buttons &= HidNpadButton_Down;//Dont remove dpad down it causes issues
-                //state->analog_stick_l = (HidAnalogStickState)0;
-                //state->analog_stick_r = (HidAnalogStickState)0;
-        } else 
-        if(comboButtons){
+                //state->analog_stick_l = (HidAnalogStickState)0; //useful later for gui
+                //state->analog_stick_r = (HidAnalogStickState)0; //useful later for gui
+        } else if(comboButtons){
             comboButtons ^= HidNpadButton_Down;//Remove DPAD Down
             state->buttons ^= comboButtons;//XOR combo buttons to ignore them
             state->buttons ^= HidNpadButton_Down;//Reset DPAD Down
@@ -653,14 +556,9 @@ void ManipulateInput(HidNpadCommonState* state){
     }
 
     if(turboButtons && !ignoreCombo) {
-
-        if(turboSwitcher){
-            turboSwitcher = false;
+        if(turboSwitcher)
             state->buttons &= ~turboCombo;
-        } 
-        else {
-            turboSwitcher = true;
-        }
+        turboSwitcher = !turboSwitcher;
     }
 }
 
@@ -680,31 +578,27 @@ void handleInput(HidNpadFullKeyState *state){
 
 HOOK_DEFINE_TRAMPOLINE(DisableFullKeyState){
     static int Callback(HidNpadFullKeyState *state, int *unkInt){
+        handleFrameAdvance();
         int result = Orig(state, unkInt);
-
         handleInput(state);
-
         return result;
-
     };
 };
 
 HOOK_DEFINE_TRAMPOLINE(DisableHandheldState){
     static int Callback(HidNpadHandheldState *state, int *unkInt){
+        handleFrameAdvance();
         int result = Orig(state, unkInt);
-
         handleInput(state);
-
         return result;
-
     };
 };
 
 HOOK_DEFINE_TRAMPOLINE(GetMapCursor){
     static void Callback(int64_t param1){
-        mapCursorPos[0] = *(float*)(param1 + 0x134);
-        mapCursorPos[1] = *(float*)(param1 + 0x138);
-        mapCursorPos[2] = *(float*)(param1 + 0x13c);
+        mapCursorPos[0] = *(float*)(param1 + 0x134);//X
+        mapCursorPos[1] = *(float*)(param1 + 0x138);//Y
+        mapCursorPos[2] = *(float*)(param1 + 0x13C);//Z?
 
         Orig(param1);
     };
@@ -714,24 +608,11 @@ HOOK_DEFINE_TRAMPOLINE(InstantSpeedBooster){//Instant Charge.
     static void Callback(uintptr_t speedboosterInst){
         g_SpeedBooster = speedboosterInst;
 
-        float SpeedThreshhold = *(float*)(g_BaseAddress + 0x7265724c);//derived from the Tunable
+        float SpeedThreshhold = *(float*)(g_BaseAddress + tunableOffs.SpeedThreshold);//derived from the Tunable
 
-
-        if(speedboosterInst && setInstantSpeed)//Is Speed Booster Instance Valid and are we using it.
+        if(speedboosterInst && setInstantSpeed){//Is Speed Booster Instance Valid and are we using it.
             if(*(u8*)(speedboosterInst+0x394) == 1){//Is Speed Booster Charging?
-
                 *(float*)(speedboosterInst+0x398) = SpeedThreshhold;//Set Speed Booster Time
-            }
-
-        if(g_PlayerPawn && *(u16*)(g_PlayerPawn + playerOffs.unkState2) && !ILallowTp){
-            ILallowTp = true;
-            ignoreCycles = 5;
-        }
-
-        if(ILallowTp || ignoreCycles > 0){//this is fucking inverted for some reason but it fucking works
-            ignoreCycles--;
-            if(ignoreCycles <= 0){
-                ILallowTp = false;
             }
         }
         
@@ -739,37 +620,8 @@ HOOK_DEFINE_TRAMPOLINE(InstantSpeedBooster){//Instant Charge.
     };
 };
 
-HOOK_DEFINE_TRAMPOLINE(checkForFrameAdvance){//this one sucks, and its only use seems to be that frame advance works in it, but nothing else does :)
-    static void Callback(int64_t param1){
-
-        g_NPad.buttons = storeForFA;//hacky solution to immitate the old functionality of this function.
-    
-        if(((g_ButtonState(HidNpadButton_Y) && g_ButtonState(HidNpadButton_A)) && g_ButtonState(HidNpadButton_Down)) || waitOne){
-            //Advance one frame
-            
-            if(ourFreeze || *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) || !waitOne){
-                //*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = false;
-                repeatInput = avoidRepeat;
-                outFuncs::togglePause();
-                waitOne = true;
-                svcSleepThread(waitTime);
-            }
-            else{
-                //*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = true;
-                repeatInput = 10;
-                outFuncs::togglePause();
-                waitOne = false;
-            }
-        }
-
-
-        Orig(param1);
-    };
-};
-
 HOOK_DEFINE_TRAMPOLINE(IgnoreSubAreaDeaths){
     static void Callback(uintptr_t EntityInst){
-        g_Player = EntityInst;
         if(!(ignoreOobDeath | isNoclip)){
             Orig(EntityInst);
         }
@@ -784,13 +636,32 @@ HOOK_DEFINE_TRAMPOLINE(ForceCoolSpark){
     };
 };
 
-HOOK_DEFINE_TRAMPOLINE(UpdatePlayerPawn){//includes all/most entites?
+HOOK_DEFINE_TRAMPOLINE(UpdatePlayerPawn){//includes all moving entites
     static void Callback(long* Player, long* unkNewPos, ulong param3){
+        //if(!setFps){
+        //    setFps = (uint64_t*)((**(uintptr_t**)(g_BaseAddress + 0x1c62718 + (0x57A08 * g_Version))) + 0x38);
+        //    frameRate(45);
+        //}
 
-        
-        if((Player+0x38) != unkNewPos){
-            if(Player && !g_PlayerPawn && Player != (long*)g_PlayerPawn){
-                g_PlayerPawn = (uintptr_t)Player;
+        if((Player + 7) != unkNewPos){
+            if(Player && !g_Player){
+                g_Player = (CEntity*)Player;
+            } else if(g_Player && !g_Morph)
+                if(*g_GameManager)
+                    if(outFuncs::GetPlayerFromGM(*g_GameManager) != g_Player)
+                        g_Morph = outFuncs::GetPlayerFromGM(*g_GameManager);
+        }
+
+        if((g_Player && g_Player->unkState2 && !ILallowTp) || !g_Morph){
+            ILallowTp = true;
+            ignoreCycles = 5;
+        }
+
+        if(ILallowTp || ignoreCycles){
+            ignoreCycles--;
+            if(ignoreCycles <= 0){
+                ignoreCycles = 0;
+                ILallowTp = false;
             }
         }
 
@@ -799,76 +670,130 @@ HOOK_DEFINE_TRAMPOLINE(UpdatePlayerPawn){//includes all/most entites?
 };
 
 HOOK_DEFINE_TRAMPOLINE(RoomTransitionUnk){
-    static void Callback(int64_t* Player, int32_t* unkNewPos, uint64_t param3){
+    static void Callback(int64_t* Player, float* unkNewPos, uint64_t param3){
+        if(unkNewPos && ((int64_t*)g_Player == Player) && ILallowTp) {
 
-        if(unkNewPos && (int64_t*)g_PlayerPawn == Player && *(float*)(g_PlayerPawn + playerOffs.posX) && ((ILreset && ILallowTp) || ILForce)) {
             if(!ILonce){
-                roomIL[0] = *(float*)(unkNewPos+0x00);
-                roomIL[1] = *(float*)(g_PlayerPawn + playerOffs.posY);
-                roomIL[2] = *(float*)(unkNewPos+0x08);
+                roomIL[0] = unkNewPos[0];
+                roomIL[1] = unkNewPos[1];
+                roomIL[2] = unkNewPos[2];
                 ILonce = true;
             }
-            
-            if(roomIL[0] && ((ILreset && ILallowTp) || ILForce)) {
-                Orig(Player, (int32_t*)roomIL, param3);
-                return;
-            }
 
+            if(!ILnext){
+                finishIL[0] = unkNewPos[0];
+                finishIL[1] = unkNewPos[1];
+                finishIL[2] = unkNewPos[2];
+                ILnext = true;
+            }
+            
+            if((ILreset && ILallowTp) || ILForce || ILGauntlet) {
+                if((roomIL[0] && !ILGauntlet) || ILForce)
+                    return Orig(Player, roomIL, param3);
+
+                if(finishIL[0])
+                    if(((unkNewPos[0] - finishDelta) < finishIL[0]) && (finishIL[0] < (unkNewPos[0] + finishDelta)))
+                        if(((unkNewPos[1] - 50) < finishIL[1]) && (finishIL[1] < (unkNewPos[1] + 50)))
+                            return Orig(Player, roomIL, param3);
+            }
         }
         Orig(Player, unkNewPos, param3);
     };
 };
 
-HOOK_DEFINE_TRAMPOLINE(GrabLuaState){
-    static void Callback(int64_t param1){
-        g_luaState = param1;
-        return Orig(param1);
+HOOK_DEFINE_TRAMPOLINE(lua_gettop){
+    static int Callback(uint64_t* LuaState){
+	    if (LuaState) {
+	    	if (*LuaState) {
+                if(!g_luaState)
+                    g_luaState = LuaState;
+        
+	    		return Orig(LuaState);
+	    	}
+	    }
+        return Orig(LuaState);
     };
 };
 
-HOOK_DEFINE_TRAMPOLINE(doSetSlomo){
-    static void Callback(float param1, int64_t param2){
-        if(forceCSpark)
-            param1 = 0.3;
+//gravity doesnt protect, varia does tho? gives you all beam damage bonus but not the actual beams.
+//diffusion shows the wave particles, cant use the supposedly unlocked aeion abilities or speed.
+//gives you omega cannon but no stream.
+HOOK_DEFINE_TRAMPOLINE(spoofAllAbilities){
+    static bool Callback(int64_t param1, int64_t* param2){
+        //Orig(param1, param2);
+        return true;
+    };
+};
 
-        Orig(param1, param2);
+bool setOnce = false;
+HOOK_DEFINE_TRAMPOLINE(SetupDebugMode){
+    static void Callback(){
+        Orig();
+        if(!setOnce){
+            if(g_Version){
+                //*(u8*)(g_BaseAddress + 0x1d473c0) = 1;
+                //*(u8*)(g_BaseAddress + 0x1d473c1) = 1;
+            } else {
+                //*(u8*)(g_BaseAddress + 0x1cee3c0) = 1;//GiveAllItems on start
+                *(u8*)(g_BaseAddress + 0x1cee3c1) = 1;//DebugStart
+                //*(u8*)(g_BaseAddress + 0x1cee3c2) = 1;//
+                //*(u8*)(g_BaseAddress + 0x1cee3c3) = 1;//
+                //*(u8*)(g_BaseAddress + 0x1c9c1d0) = 1;//
+                
+                //*(float*)(g_BaseAddress + 0x1cee3b0) = 1.0;
+                //*(float*)(g_BaseAddress + 0x1cee3b4) = 1.0;
+
+                outFuncs::TRntString256Ctor((uint64_t*)(g_BaseAddress + 0x1cee3c8), (char*)"c10_samus");//World
+                outFuncs::TRntString256Ctor((uint64_t*)(g_BaseAddress + 0x1cee3f8), (char*)"s010_cave");//Scenario
+                outFuncs::TRntString256Dtor((uint64_t*)(g_BaseAddress + 0x1cee428));
+                outFuncs::TRntString256Ctor((uint64_t*)(g_BaseAddress + 0x1cee428), (char*)"samus");//Player
+                outFuncs::TRntString256Dtor((uint64_t*)(g_BaseAddress + 0x1cee458));
+                outFuncs::TRntString256Ctor((uint64_t*)(g_BaseAddress + 0x1cee458), (char*)"PRP_CV_AccessPoint001_WeightPlate");//StartPoint
+            }
+            setOnce = true;
+        }
+    };
+};
+
+HOOK_DEFINE_TRAMPOLINE(IgnoreUpdatePlayer){
+    static void Callback(long* param1, long* param2, uint64_t param3){
+        if(showMenu && param1 != (long*)g_Player)
+            param1 = param2 + 0x38;
+
+        Orig(param1, param2, param3);
+    };
+};
+
+HOOK_DEFINE_TRAMPOLINE(IgnorePlayerContact){
+    static ulong Callback(long* param1, long* param2){
+        //Orig(param1, param2);
+        return 6;
     };
 };
 
 extern "C" void exl_main(void* x0, void* x1) {
     /* Setup hooking enviroment. */
     exl::hook::Initialize();
+    initExternFuncs(g_BaseAddress, g_Version);
 
-    initExternFuncs();
+    //SaveSnapShotToCheckpointLua? 7101036ea0(und8 unkParam1)
+    //setFrameRateLua? 710103efb0(und8 unkParam1)
+    //EnableDebugMinimap 71010534a0(bool param1)
 
     DisableFullKeyState::InstallAtSymbol("_ZN2nn3hid12GetNpadStateEPNS0_16NpadFullKeyStateERKj");
     DisableHandheldState::InstallAtSymbol("_ZN2nn3hid12GetNpadStateEPNS0_17NpadHandheldStateERKj");
-    
-    //HideScenario void 0x1041010(void)
-    //ShowScenario void 0x1040fe0(void)
-    //DEBUG_TESTMakePlayerInvulnerable 710103e0e0(und8 unkParam1)
-    //SaveSnapShotToCheckpointLua? 7101036ea0(und8 unkParam1)
-    //setFrameRateLua? 710103efb0(und8 unkParam1)
-    //ShowFps 710103dfe0(void) no worky
-    //RecoverPlayerLifeLua 710103ec60(void) works
-    //KillEmmiLua 710103e300(void) works
-    //KillAllEnemiesLua 710103e1f0(void) works
-    //KillCurrentBossLua 710103e3f0(void) untested
-    //TogglePauseLua? 7101036210(void) works
-    //KillCurrentPlayer? 710103e1a0 works
-    //GainAllItemsAndPowerups? 7101038c10(void) works
-    //EnableDebugMinimap 71010534a0(lua_state)
-    //SetIAmACheater 7101054de0(void) nothing?
 
-    //doSetSlomo::InstallAtOffset(0xdbccd8); works but havent implemented fully
-    //GrabLuaState::InstallAtOffset(0x103c780); I'll hook gettop or something soon
-    GetMapCursor::InstallAtOffset(0x1b9f44);
-    checkForFrameAdvance::InstallAtOffset(0x6dc7c);
-    IgnoreSubAreaDeaths::InstallAtOffset(0xea4e68);
-    InstantSpeedBooster::InstallAtOffset(0x33ee94);
-    ForceCoolSpark::InstallAtOffset(0x32e798);
-    UpdatePlayerPawn::InstallAtOffset(0x232bec);
-    RoomTransitionUnk::InstallAtOffset(0xd6a5a0);
+    //IgnorePlayerContact::InstallAtOffset(0x1122640);
+    //spoofAllAbilities::InstallAtOffset(0x110075c);
+    IgnoreUpdatePlayer::InstallAtOffset(0x232bec);
+    SetupDebugMode::InstallAtOffset(0x1760);
+    GetMapCursor::InstallAtOffset(0x1b9f44 + (0x430 * g_Version));//+0x430
+    IgnoreSubAreaDeaths::InstallAtOffset(0xea4e68 + (0x40720 * g_Version));//0x40720
+    InstantSpeedBooster::InstallAtOffset(0x33ee94 + (0x868 * g_Version));//0x868
+    ForceCoolSpark::InstallAtOffset(0x32e798 + (0x638 * g_Version));//+0x638
+    UpdatePlayerPawn::InstallAtOffset(0x232bec + (0x490 * g_Version));//0x490
+    RoomTransitionUnk::InstallAtOffset(0xd6a5a0 + (0x12B00 * g_Version));//0x12B00
+    lua_gettop::InstallAtOffset(0x105eb80 + (0xDEAD * g_Version));
 
 }
 
