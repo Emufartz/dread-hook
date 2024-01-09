@@ -10,7 +10,7 @@ CHealthComponent* plrHealthComp = 0;
 
 const int menuEntriesMax = 32;
 menuEntry menuText[menuEntriesMax];
-float screenPos[2];
+float screenPos[3];
 float worldPos[3];
 float unkF1 = 0;
 float unkF2 = 0;
@@ -125,32 +125,35 @@ int drawTextOnScreen(float damageDealt, long param_2, float drawPos[3], float dr
             outFuncs::FUN_710019d854(*(long *)((*ppTVar5)[0x26] + 0x78));
             outFuncs::UnkSetTextStyle(drawColor[0],drawColor[1],drawColor[2],1.0,*(long *)((*ppTVar5)[0x26] + 0x78));
             outFuncs::UnkEnemyLifeW2S(*(uint64_t*)DAT_7101cee300,drawPos,&unkF2,&unkF1,0,0,1);
-            screenPos[0] = (scaledY / scaledX) * ((unkF1 * 2) / scaledY - 1.0);
-            screenPos[1] = (unkF2 * 2) / scaledX - 1.0;
+            screenPos[0] = (scaledY / scaledX) * ((unkF1 * 2) / scaledY - 1.0);//useless?
+            screenPos[1] = (unkF2 * 2) / scaledX - 1.0;//useless?
+            screenPos[2] = 0;//useless?
             outFuncs::UnkEnemyLifeFunc((long)(*ppTVar5) + 0x20, screenPos);
-            if(!string)
-                outFuncs::swprintf((wchar_t *)formattedText,0x20,L"%.2f", damageDealt);
-            else
-                outFuncs::swprintf((wchar_t *)formattedText,0x20,string);
-            outFuncs::CopyWideStringAndParse((*ppTVar5)[0x26],(wchar_t *)formattedText);
+            if(!string){
+                outFuncs::swprintf((wchar_t *)formattedText,0x40,L"%.2f", damageDealt);
+                outFuncs::CopyWideStringAndParse((*ppTVar5)[0x26],(wchar_t *)formattedText);
+            }else{
+                outFuncs::CopyWideStringAndParse((*ppTVar5)[0x26],(wchar_t *)string);
+            }
+            //outFuncs::CopyWideStringAndParse((*ppTVar5)[0x26],(wchar_t *)formattedText);
             *(char *)((long)(*ppTVar5) + 0x11b) = 0x1;
+            
+            for(int i = 0; i < menuEntriesMax; i++){
+                if(menuText[i].ptr)// && *(float*)(menuText[i].ptr + 0x8))
+                    continue;
+
+                menuText[i].ptr = (int64_t)ppTVar5;
+                menuText[i].offs[0] = drawPos[0] - g_Player->posX;
+                menuText[i].offs[1] = drawPos[1] - g_Player->posY;
+                return i;
+            }
         }
     }
 
-    for(int i = 0; i < menuEntriesMax; i++){
-        if(menuText[i].ptr && *(float*)(menuText[i].ptr + 0x10))
-            continue;
-
-        menuText[i].ptr = (int64_t)ppTVar5;
-        menuText[i].offs[0] = drawPos[0] - g_Player->posX;
-        menuText[i].offs[1] = drawPos[1] - g_Player->posY;
-        return i;
-    }
-
-    return 0;
+    return -1;
 }
 
-void givePlayerItems(float inventoryArr[37]){
+void givePlayerItems(){
     curItem = 0;
     curItemName = 0;
     itemNamesArray = *(uint64_t*)(g_BaseAddress+0x1c626c0 + (0x579D0 * g_Version));
@@ -181,7 +184,7 @@ void givePlayerItems(float inventoryArr[37]){
                 if (!curItemName) {
                     outFuncs::givePlayerItem((curItem+0x10), curItem, itemNamesArray);
                 }
-                outFuncs::givePlayerItem2(inventoryArr[i], 0.0, g_StaticPlayerItems, (curItem+0x10), 0x1, 0x1, 0x1);
+                outFuncs::givePlayerItem2(itemVals[i], 0.0, g_StaticPlayerItems, (curItem+0x10), 0x1, 0x1, 0x1);
             }
 
             outFuncs::unk_dc47a0_func(*g_GameManager);
@@ -210,65 +213,143 @@ void handleFrameAdvance(){
     }
 }
 
-float drawTest[2] = {0};
-int testIdx1 = 0;
-int testIdx2 = 0;
-bool testUpdate = false;
-u8 drawTextMod = 0;
+float lastPos[2] = {0};
+float lastSkew = 0;
+float lastVel[2] = {0};
+float drawStyle[3] = {0.9, 0.0, 1.0};
+float tabStyle[3] = {0.9, 0.0, 1.0};
+const int8_t maxIndexes = 5;
+int8_t infoIndexes[maxIndexes] = { -1 };
+int menuTabTextIdx = -1;
+int8_t currentTab = 0;
+int8_t currentSubtab = -1;
+bool entryUpdate = false;
+wchar_t fancySubtext[64] = { 0 };
+const wchar_t* fancyDivider = L"->";
+size_t sizeOfDiv = wcslen(fancyDivider);
+size_t sizeOfTitle;
+size_t sizeOfSub;
 void updateMenu() {
-    if(showMenu){
-        float drawPos[3] = {g_Player->posX,g_Player->posY, 60.0};
-        float drawStyle[3] = {0.9, 0.0, 1.0};
-        if(drawTest[0] != g_Player->posX || drawTest[1] != g_Player->posY){
-            drawTest[0] = g_Player->posX;
-            drawTest[1] = g_Player->posY;
-            testUpdate = true;
-        }
+    if(menuTabs[1].tabToggled[2] && !isNoclip)
+        ToggleNoclip();
 
-        if(justOpened || testUpdate){
+    if(menuTabs[0].tabToggled[2] && g_Player)
+        g_Player->healthComp->curHealth = g_Player->healthComp->maxHealth;
 
-            if(menuText[testIdx1].ptr){
-                if(*(float*)(menuText[testIdx1].ptr + 0x8))
-                    *(float*)(menuText[testIdx1].ptr + 0x8) = 0.0;
-                menuText[testIdx1].ptr = 0x0;
-                testIdx1 = 0;
-            }
-            if(menuText[testIdx2].ptr){
-                if(*(float*)(menuText[testIdx2].ptr + 0x8))
-                    *(float*)(menuText[testIdx2].ptr + 0x8) = 0.0;
-                menuText[testIdx2].ptr = 0x0;
-                testIdx2 = 0;
-            }
+    g_Player->collisionComp->fullInvuln = menuTabs[0].tabToggled[4];//Invuln
 
-            drawPos[0] = g_Player->posX;
-            drawPos[1] = g_Player->posY;
-            testIdx1 = drawTextOnScreen(drawTest[0], **(long**)(g_BaseAddress + 0x1c78f28), drawPos, drawStyle, 0);
-            drawPos[1] = g_Player->posY - 25.0;
-            testIdx2 = drawTextOnScreen(drawTest[1], **(long**)(g_BaseAddress + 0x1c78f28), drawPos, drawStyle, 0);
+    ignoreOobDeath = menuTabs[2].tabToggled[3];
+
+    float drawPos[3] = {g_Player->posX,g_Player->posY, 60.0};
+    if(lastPos[0] != g_Player->posX || lastPos[1] != g_Player->posY
+    || lastSkew != g_Player->skew
+    || lastVel[0] != g_Player->velX || lastVel[1] != g_Player->velY)
+    {
+        lastPos[0] = g_Player->posX;
+        lastPos[1] = g_Player->posY;
+        lastSkew   = g_Player->skew;
+        lastVel[0] = g_Player->velX;
+        lastVel[1] = g_Player->velY;
+    }
+
+    for(int idx = 0; idx < maxIndexes; idx++){//clear out currently drawn text
+        if(infoIndexes[idx] == -1)
+            continue;
+
+        if(menuText[infoIndexes[idx]].ptr){
+            if(*(float*)(menuText[infoIndexes[idx]].ptr + 0x8))
+                *(float*)(menuText[infoIndexes[idx]].ptr + 0x8) = 0.0;
+            menuText[infoIndexes[idx]].ptr = 0x0;
+            infoIndexes[idx] = -1;
         }
     }
 
-    //Manage menu text items
+    if(menuTabs[4].tabToggled[3] || showMenu){//Always showing? or is menu open
+        drawPos[0] = g_Player->posX;
+        drawPos[1] = g_Player->posY;
+        if(menuTabs[4].tabToggled[0]){
+            infoIndexes[0] = drawTextOnScreen(lastPos[0], *g_floatText, drawPos, drawStyle, 0);
+            drawPos[1] -= 25.0;
+            infoIndexes[1] = drawTextOnScreen(lastPos[1], *g_floatText, drawPos, drawStyle, 0);
+            drawPos[1] -= 25.0;
+        }
+        
+        if(menuTabs[4].tabToggled[1]){
+            infoIndexes[2] = drawTextOnScreen(lastSkew, *g_floatText, drawPos, drawStyle, 0);
+            drawPos[1] -= 25.0;
+        }
+        
+        if(menuTabs[4].tabToggled[2]){
+            infoIndexes[3] = drawTextOnScreen(lastVel[0], *g_floatText, drawPos, drawStyle, 0);
+            drawPos[1] -= 25.0;
+            infoIndexes[4] = drawTextOnScreen(lastVel[1], *g_floatText, drawPos, drawStyle, 0);
+            drawPos[1] -= 25.0;
+        }
+    }
+    
+    if(showMenu){
+        if(menuText[menuTabTextIdx].ptr){
+            if(*(float*)(menuText[menuTabTextIdx].ptr + 0x8))
+                *(float*)(menuText[menuTabTextIdx].ptr + 0x8) = 0.0;
+            menuText[menuTabTextIdx].ptr = 0x0;
+            menuTabTextIdx = -1;
+        }
+        
+        memset(fancySubtext, 0, (sizeof(wchar_t) * 64));
+        if(currentSubtab == -1){
+            sizeOfTitle = wcslen(menuTabs[currentTab].tabTitle);
+            memcpy(fancySubtext, menuTabs[currentTab].tabTitle, sizeof(wchar_t) * sizeOfTitle);
+
+            tabStyle[0] = menuTabs[currentTab].defaultColor[0];
+            tabStyle[1] = menuTabs[currentTab].defaultColor[1];
+            tabStyle[2] = menuTabs[currentTab].defaultColor[2];
+        } else {
+            sizeOfTitle = wcslen(menuTabs[currentSubtab].tabTitle);
+            sizeOfSub = wcslen(menuTabs[currentSubtab].tabSubtitles[currentTab]);
+            memcpy(fancySubtext, menuTabs[currentSubtab].tabTitle, sizeof(wchar_t) * sizeOfTitle);
+            memcpy(&fancySubtext[sizeOfTitle], fancyDivider, sizeof(wchar_t) * sizeOfDiv);
+            memcpy(&fancySubtext[(sizeOfTitle + sizeOfDiv)], menuTabs[currentSubtab].tabSubtitles[currentTab], (sizeof(wchar_t) * sizeOfSub) + 4);
+            
+            tabStyle[0] = menuTabs[currentSubtab].currentColor[0];
+            tabStyle[1] = menuTabs[currentSubtab].currentColor[1];
+            tabStyle[2] = menuTabs[currentSubtab].currentColor[2];
+        }
+        menuTabTextIdx = drawTextOnScreen(0.0, *g_floatText, drawPos, tabStyle, fancySubtext);
+    }
+
+    //Keep menu items alive and prevent floating, or destroy them if menu closed
     for(int i = 0; i < menuEntriesMax; i++){
         if(menuText[i].ptr){
             if(showMenu){
-                if(*(float*)(menuText[i].ptr + 0xc))
-                    *(float*)(menuText[i].ptr + 0xc) = g_Player->posX + menuText[i].offs[0];
-                if(*(float*)(menuText[i].ptr + 0x10))
-                    *(float*)(menuText[i].ptr + 0x10) = g_Player->posY + menuText[i].offs[1];
+                *(float*)(menuText[i].ptr + 0xc) = g_Player->posX + menuText[i].offs[0];
+                *(float*)(menuText[i].ptr + 0x10) = g_Player->posY + menuText[i].offs[1];
 
                 if(*(float*)(menuText[i].ptr + 0x8))
                     *(float*)(menuText[i].ptr + 0x8) = 1.0;
             } else {
-                if(*(float*)(menuText[i].ptr + 0x8))
+                if(menuTabs[4].tabToggled[3]){
+                    if(menuTabTextIdx != -1){
+                        if(menuText[menuTabTextIdx].ptr){
+                            if(*(float*)(menuText[menuTabTextIdx].ptr + 0x8))
+                                *(float*)(menuText[menuTabTextIdx].ptr + 0x8) = 0.0;
+                            menuText[menuTabTextIdx].ptr = 0x0;
+                            menuTabTextIdx = -1;
+                        }
+                    }
+                } else {
                     *(float*)(menuText[i].ptr + 0x8) = 0.0;
-                menuText[i].ptr = 0x0;
+                    menuText[i].ptr = 0x0;
+                }
             }
         }
     }
-
-    justOpened = false;
-    testUpdate = false;
+    
+    if(!showMenu){
+        currentTab = 0;
+        currentSubtab = -1;
+        menuTabTextIdx = -1;
+        memset(fancySubtext, 0, (sizeof(wchar_t) * 64));
+    }
 }
 
 bool snapShotCreated = false;
@@ -281,7 +362,7 @@ bool checkInputs(){
     if(isNoclip){
         noclipDif[0] += ((g_NPad.analog_stick_r.x * 40) / 0x7FFF);
         noclipDif[1] += ((g_NPad.analog_stick_r.y * 40) / 0x7FFF);
-
+        
         g_Player->posX = noclipPos[0] + noclipDif[0];
         g_Player->posY = noclipPos[1] + noclipDif[1];
         if(g_Morph){
@@ -293,11 +374,128 @@ bool checkInputs(){
         noclipDif[1] = 0;
     }
 
-    updateMenu();
-
     if(repeatInput >= 1){
         repeatInput--;
         return true;
+    }
+
+    if(showMenu){
+        if(g_ButtonState(HidNpadButton_Up) || g_ButtonState(HidNpadButton_Down)){
+            if(g_ButtonState(HidNpadButton_Up)){
+                currentTab--;
+                if(currentTab < 0){
+                    if(currentSubtab != -1)
+                        currentTab = (menuTabs[currentSubtab].tabEntriesMax) - 1;
+                    else
+                        currentTab = menuTabsMax - 1;
+                }
+            } else {
+                currentTab++;
+                if(currentSubtab != -1){
+                    if(currentTab >= menuTabs[currentSubtab].tabEntriesMax)
+                        currentTab = 0;
+                } else {
+                    if(currentTab >= menuTabsMax)
+                        currentTab = 0;
+                }
+            }
+            entryUpdate = true;
+        }
+        if(g_ButtonState(HidNpadButton_A)){
+            if(currentSubtab == -1){
+                currentSubtab = currentTab;
+                currentTab = 0;
+            } else {
+                if(menuTabs[currentSubtab].tabTogglables[currentTab]){
+                    menuTabs[currentSubtab].tabToggled[currentTab] = !menuTabs[currentSubtab].tabToggled[currentTab];
+                } else {
+                    switch(currentSubtab){
+                        case(0):
+                            switch(currentTab){
+                                case(0):
+                                    outFuncs::recoverPlayerLife();
+                                    break;
+                                case(1):
+                                    outFuncs::recoverPlayerMissiles();
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case(1):
+                            switch(currentTab){
+                                case(0):
+                                    SavePlayerPos(&telePos);
+                                    break;
+                                case(1):
+                                    LoadPlayerPos(telePos);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case(2):
+                            switch(currentTab){
+                                case(0):
+                                    givePlayerItems();
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case(3):
+                            switch(currentTab){
+                                case(0):
+                                    outFuncs::unk_dc47a0_func(*g_GameManager);
+                                    break;
+                                case(1):
+                                    outFuncs::killPlayerFunc();
+                                    break;
+                                case(2):
+                                    outFuncs::killAllEnemies();
+                                    break;
+                                case(3):
+                                    outFuncs::killCurrentBoss();
+                                    break;
+                                case(4):
+                                    outFuncs::killCurrentEmmi();
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            entryUpdate = true;
+        }
+        if(g_ButtonState(HidNpadButton_B)){
+            if(currentSubtab != -1){
+                currentTab = currentSubtab;
+                currentSubtab = -1;
+            } else {
+                showMenu = false;
+            }
+            entryUpdate = true;
+        }
+        repeatInput = entryUpdate * 8;
+        if(entryUpdate){
+            if(currentSubtab != -1){
+                menuTabs[currentSubtab].currentColor[0] = menuTabs[currentSubtab].defaultColor[0];
+                menuTabs[currentSubtab].currentColor[1] = menuTabs[currentSubtab].defaultColor[1];
+                menuTabs[currentSubtab].currentColor[2] = menuTabs[currentSubtab].defaultColor[2];
+                if(menuTabs[currentSubtab].tabTogglables[currentTab]){
+                    if(menuTabs[currentSubtab].tabToggled[currentTab]){
+                        menuTabs[currentSubtab].currentColor[0] = menuTabs[currentSubtab].enableColor[0];
+                        menuTabs[currentSubtab].currentColor[1] = menuTabs[currentSubtab].enableColor[1];
+                        menuTabs[currentSubtab].currentColor[2] = menuTabs[currentSubtab].enableColor[2];
+                    }
+                }
+            }
+            return true;
+        }
     }
 
     if(g_ButtonState(HidNpadButton_Up)){//Toggle Turbo
@@ -323,7 +521,10 @@ bool checkInputs(){
     if(g_ButtonXState(HidNpadButton_Right)){
         showMenu = !showMenu;
         if(showMenu){
-            justOpened = true;
+            //justOpened = true;
+        } else {
+            currentTab = 0;
+            currentSubtab = -1;
         }
         repeatInput = avoidRepeat;
         return true;
@@ -375,22 +576,14 @@ bool checkInputs(){
             comboButtons |= HidNpadButton_Left | HidNpadButton_L;
             
             repeatInput = 10;
-            isNoclip = !isNoclip;
-            if(isNoclip){
-                repeatInput = avoidRepeat;
-                noclipPos[0] = g_Player->posX;
-                noclipPos[1] = g_Player->posY;
-                if(g_Morph){
-                    noclipPos[2] = g_Morph->posX;
-                    noclipPos[3] = g_Morph->posY;
-                }
-            }
+            ToggleNoclip();
             return true;
         }
         if(g_ButtonState(HidNpadButton_Right)){
             if(isNoclip){
-                TeleportPlayer(g_Player, g_Morph, noclipPos);
+                LoadPlayerPos(noclipPos);
                 isNoclip = false;
+                menuTabs[1].tabToggled[2] = false;
                 repeatInput = 10;
             }
             return true;
@@ -414,7 +607,7 @@ bool checkInputs(){
 
             //Give All Items
             if(g_ButtonState(HidNpadButton_Plus)){
-                givePlayerItems(itemVals);
+                givePlayerItems();
                 repeatInput = avoidRepeat;
                 return true;
             }
@@ -430,6 +623,7 @@ bool checkInputs(){
             //Toggle OOB Ignore
             if(g_ButtonState(HidNpadButton_StickL)){
                 ignoreOobDeath = !ignoreOobDeath;
+                menuTabs[2].tabToggled[3] = ignoreOobDeath;
                 repeatInput = avoidRepeat;
                 return true;
             }
@@ -466,12 +660,7 @@ bool checkInputs(){
 
                 if(g_ButtonState(HidNpadButton_L)){
                     //Save Tele pos for Teleport
-                    telePos[0] = g_Player->posX;
-                    telePos[1] = g_Player->posY;
-                    if(g_Morph){
-                        telePos[2] = g_Morph->posX;
-                        telePos[3] = g_Morph->posY;
-                    }
+                    SavePlayerPos(&telePos);
                     repeatInput = avoidRepeat;
                     return true;
                 }
@@ -479,7 +668,7 @@ bool checkInputs(){
                 if(g_ButtonState(HidNpadButton_R)){
                     //Tele to saved pos
                     if(telePos[0] && telePos[1])
-                        TeleportPlayer(g_Player, g_Morph, telePos);
+                        LoadPlayerPos(telePos);
                     repeatInput = avoidRepeat;
                     return true;
                 }
@@ -487,12 +676,10 @@ bool checkInputs(){
 
             //Tele to map cursor, TODO add a check for in menu
             if(g_ButtonState(HidNpadButton_R) && g_ButtonState(HidNpadButton_ZR)){
-                //if(!ourFreeze){
-                    float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
-                    TeleportPlayer(g_Player, g_Morph, tempPos);
-                    repeatInput = avoidRepeat;
-                    return true;
-                //}
+                float tempPos[4] = {mapCursorPos[0], mapCursorPos[1], mapCursorPos[0], mapCursorPos[1]};
+                LoadPlayerPos(tempPos);
+                repeatInput = avoidRepeat;
+                return true;
             }
 
             //Toggle cool spark
@@ -512,9 +699,6 @@ bool checkInputs(){
             //Toggle Freeze Time
             if((g_ButtonState(HidNpadButton_X) && g_ButtonState(HidNpadButton_A))){
                 outFuncs::togglePause();
-                //ourFreeze = !ourFreeze;//Desyncs if unpausing the game manually. Gonna get IsGamePaused working before using this
-                //*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea) = !*(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea);
-                //ourFreeze = (!ourFreeze & *(bool*)(g_PlayerPawn+playerOffs.notUpdate3dArea));
                 storeForWaitOne = 0;
 
                 repeatInput = avoidRepeat;
@@ -527,12 +711,33 @@ bool checkInputs(){
     return false;
 }
 
-void TeleportPlayer(CEntity* player, CEntity* morph, float location[4]){
-    player->posX = location[0];
-    player->posY = location[1];
-    if(morph){
-        g_Morph->posX = location[2];
-        g_Morph->posY = location[3];
+void ToggleNoclip(){
+    isNoclip = !isNoclip;
+    menuTabs[1].tabToggled[2] = isNoclip;
+    if(isNoclip){
+        repeatInput = avoidRepeat;
+        SavePlayerPos(&noclipPos);
+    }
+    return;
+}
+
+void SavePlayerPos(float (*arr)[4]){
+    (*arr)[0] = g_Player->posX;
+    (*arr)[1] = g_Player->posY;
+    if(g_Morph){
+        (*arr)[2] = g_Morph->posX;
+        (*arr)[3] = g_Morph->posY;
+    }
+}
+
+void LoadPlayerPos(float arr[4]){
+    if(g_Player){
+        g_Player->posX = arr[0];
+        g_Player->posY = arr[1];
+    }
+    if(g_Morph){
+        g_Morph->posX = arr[2];
+        g_Morph->posY = arr[3];
     }
 }
 
@@ -622,7 +827,7 @@ HOOK_DEFINE_TRAMPOLINE(InstantSpeedBooster){//Instant Charge.
 
 HOOK_DEFINE_TRAMPOLINE(IgnoreSubAreaDeaths){
     static void Callback(uintptr_t EntityInst){
-        if(!(ignoreOobDeath | isNoclip)){
+        if(!(ignoreOobDeath | isNoclip | menuTabs[2].tabToggled[3])){
             Orig(EntityInst);
         }
     };
@@ -665,7 +870,10 @@ HOOK_DEFINE_TRAMPOLINE(UpdatePlayerPawn){//includes all moving entites
             }
         }
 
-        return Orig(Player, unkNewPos, param3);
+        Orig(Player, unkNewPos, param3);
+        updateMenu();
+
+        return;
     };
 };
 
@@ -757,7 +965,7 @@ HOOK_DEFINE_TRAMPOLINE(SetupDebugMode){
 
 HOOK_DEFINE_TRAMPOLINE(IgnoreUpdatePlayer){
     static void Callback(long* param1, long* param2, uint64_t param3){
-        if(showMenu && param1 != (long*)g_Player)
+        if(showMenu && param1 != (long*)g_Player && param1 != (long*)g_Morph)
             param1 = param2 + 0x38;
 
         Orig(param1, param2, param3);

@@ -189,9 +189,9 @@ void initExternFuncs(uintptr_t g_BaseAddress, u8 g_Version){//ermmm epic optimis
     outFuncs::hideGameScenario = (HideScenario)(g_BaseAddress + 0x1041010 + (0x41C70 * g_Version));
     outFuncs::showGameScenario = (ShowScenario)(g_BaseAddress + 0x1040fe0 + (0x41C70 * g_Version));
     //outFuncs::makePlayerInvincible = (DEBUG_MakePlayerInvincible)(g_BaseAddress + 0x103e0e0 + (0x41C70 * g_Version));//0x41C70
-    //outFuncs::killCurrentBoss = (killBoss)(g_BaseAddress + 0x103e3f0 + (0x41C70 * g_Version));
-    //outFuncs::killCurrentEmmi = (killEmmi)(g_BaseAddress + 0x103e300 + (0x41C70 * g_Version));//0x41C70
-    //outFuncs::killAllEnemies = (killEnemies)(g_BaseAddress + 0x103e1f0 + (0x41C70 * g_Version));//0x41C70
+    outFuncs::killCurrentBoss = (killBoss)(g_BaseAddress + 0x103e3f0 + (0x41C70 * g_Version));
+    outFuncs::killCurrentEmmi = (killEmmi)(g_BaseAddress + 0x103e300 + (0x41C70 * g_Version));//0x41C70
+    outFuncs::killAllEnemies = (killEnemies)(g_BaseAddress + 0x103e1f0 + (0x41C70 * g_Version));//0x41C70
     outFuncs::givePlayerAllItems = (giveAllItems)(g_BaseAddress + 0x1038c10 + (0x41C70 * g_Version));//0x41C70
     outFuncs::givePlayerItem = (giveItem)(g_BaseAddress + 0xae6c10 + (0x2E00 * g_Version));
     outFuncs::givePlayerItem2 = (giveItem2)(g_BaseAddress + 0x11008c8 + (0x42160 * g_Version));

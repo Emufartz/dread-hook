@@ -16,14 +16,100 @@ uint64_t* g_StaticPlayerItems = 0;
 uint64_t* g_luaState = nullptr;
 float mapCursorPos[3] = { 0.0 };
 HidNpadFullKeyState g_NPad;
-bool showMenu = false;
-bool justOpened = false;
 
 uint64_t* g_GameManager = *(uint64_t**)(g_BaseAddress + 0x1c626b8 + (0x579D0 * g_Version));//2.1 +0x579D0
 uint64_t nvnProcVT = *(uint64_t *)(g_BaseAddress + 0x6e241c10);//vtable of nvn functions, 522 pointers long
 uint64_t DAT_7101cee300 = *(uint64_t *)(g_BaseAddress + 0x1c62700);
 uint64_t DAT_71726c5788 = *(uint64_t *)(g_BaseAddress + 0x1c9c1d0);
 uint64_t DAT_7101cee108 = *(uint64_t *)(g_BaseAddress + 0x1cee108);
+uint64_t* g_floatText = *(uint64_t**)(g_BaseAddress + 0x1c78f28);
+
+bool showMenu = false;
+//bool justOpened = false;
+
+const int menuTabsMax = 5;
+
+struct TmenuTab{
+    const wchar_t* tabTitle;
+    const wchar_t* tabSubtitles[8];
+    int tabEntriesMax;
+    const bool tabTogglables[8];
+    bool tabToggled[8];
+    float currentColor[3];
+    float defaultColor[3];
+    float enableColor[3];
+};
+
+TmenuTab menuTabs[menuTabsMax] = 
+{
+    {  L"Player",
+     { L"Refill Health", L"Refill Missiles", L"Infinite Health", L"Infinite Missles", L"Toggle Invuln" },
+       5,
+     { 0, 0, 1, 1, 1 },
+     { 0, 0, 1, 1, 0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.0, 0.8, 0.0 }
+    },
+    {  L"Position",
+     { L"Save Position", L"Load Position", L"Toggle Noclip" },
+       3,
+     { 0, 0, 1 },
+     { 0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.0, 0.8, 0.0 }
+    },
+    {  L"Abilities",
+     { L"Give All Items", L"Toggle Instant Charge", L"Toggle Instant Speedbooster", L"Toggle OOB Deaths" },
+       4,
+     { 0, 1, 1, 1 },
+     { 0, 0, 1, 1 },
+     { 0.9, 0.0, 1.0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.0, 0.8, 0.0 }
+    },
+    {  L"Game",
+     { L"Refresh Player", L"Kill Player", L"Kill Visible Enemies", L"Kill Current Boss", L"Kill Current Emmi" },
+       5,
+     { 0 },
+     { 0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.0, 0.8, 0.0 }
+    },
+    //{  L"Misc",
+    // { L"Toggle Coolspark", L"Toggle Freeze Enemies" },
+    //   5,
+    // { 0 },
+    // { 0 },
+    // { 0.9, 0.0, 1.0 },
+    // { 0.9, 0.0, 1.0 },
+    // { 0.0, 0.8, 0.0 }
+    //},
+    {  L"Menu",
+     { L"Toggle Position", L"Toggle Skew", L"Toggle Velocity", L"Always Show" },
+       4,
+     { 1, 1, 1, 1 },
+     { 0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.9, 0.0, 1.0 },
+     { 0.0, 0.8, 0.0 }
+    }
+};
+
+/*todo functions:
+-Fill missiles
+-Refresh Player from Blackboard
+-Toggle infinite missiles
+Toggle intangible
+Toggle invinsible
+Toggle blue suit
+Toggle instant charge
+Toggle roomIL
+Toggle gauntlet
+-Toggle show/hide vel, skew, etc.
+*/
 
 struct menuEntry {
     int64_t ptr = 0;
@@ -81,11 +167,11 @@ class CEntity{
     char unkPadding5[0x68];
     long* playerAbilities;//0x270
     char unkPadding6[0x158];
-    short unkState2;
-    char unkPadding7[0x2BD2];
+    short unkState2;//0x3D0
+    char unkPadding7[0x2BD6];
     float velX;
     float velY;
-};
+};//VelX might be 0x2EE0?
 CEntity* g_Player;
 CEntity* g_Morph;
 CEntity* g_StaticPlayer;
@@ -111,7 +197,11 @@ void ManipulateInput(HidNpadCommonState* state);
 
 void handleInput(HidNpadFullKeyState *state);
 
-void TeleportPlayer(CEntity* player, CEntity* morph, float location[4]);
+void ToggleNoclip();
+
+void SavePlayerPos(float (*arr)[4]);
+
+void LoadPlayerPos(float arr[4]);
 
 void updateMenu();
 
